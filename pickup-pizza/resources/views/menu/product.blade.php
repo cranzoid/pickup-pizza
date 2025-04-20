@@ -328,128 +328,28 @@
                                 <!-- Two-Pizza Combo specific display -->
                                 @include('menu.two-pizza-combos')
                             @else
-                                <!-- Regular Pizza Toppings -->
-                                <div class="mb-4">
-                                    <h5 class="fw-bold mb-3">
-                                        @if($product->is_specialty)
-                                            Included Toppings
-                                        @else
+                                <!-- Pizza Toppings -->
+                                @if($product->is_specialty)
+                                    <!-- Use specialty pizza template for specialty pizzas -->
+                                    @include('menu.specialty-pizza')
+                                @else
+                                    <!-- Regular Pizza Toppings -->
+                                    <div class="mb-4">
+                                        <h5 class="fw-bold mb-3">
                                             Choose Toppings
                                             @if($product->max_toppings)
                                                 <small class="text-muted">(Max {{ $product->max_toppings }} toppings)</small>
                                             @endif
-                                        @endif
-                                    </h5>
-                                    
-                                    <!-- Selectable toppings for custom pizza -->
-                                    <div class="row g-2 toppings-container">
-                                        @php
-                                            $meatToppings = $toppings->where('category', 'meat');
-                                            $veggieToppings = $toppings->where('category', 'veggie');
-                                            $cheeseToppings = $toppings->where('category', 'cheese');
-                                        @endphp
+                                        </h5>
                                         
-                                        @if($meatToppings->count() > 0)
-                                            <div class="col-12 mb-2">
-                                                <h6 class="fw-bold text-danger">Meats</h6>
-                                            </div>
-                                            @foreach($meatToppings as $topping)
-                                                <div class="col-md-4 col-sm-6">
-                                                    <div class="form-check">
-                                                        <input class="form-check-input topping-checkbox" type="checkbox" name="toppings[]" 
-                                                            id="topping-{{ $topping->id }}" value="{{ $topping->id }}"
-                                                            data-counts-as="{{ $topping->counts_as }}"
-                                                            @if($product->max_toppings) data-max-toppings="{{ $product->max_toppings }}" @endif>
-                                                        <label class="form-check-label" for="topping-{{ $topping->id }}">
-                                                            {{ $topping->name }}
-                                                            @if($topping->counts_as > 1)
-                                                                <span class="badge bg-danger">{{ $topping->counts_as }}x</span>
-                                                            @endif
-                                                        </label>
-                                                    </div>
-                                                </div>
-                                            @endforeach
-                                        @endif
-                                        
-                                        @if($veggieToppings->count() > 0)
-                                            <div class="col-12 mb-2 mt-3">
-                                                <h6 class="fw-bold text-success">Veggies</h6>
-                                            </div>
-                                            @foreach($veggieToppings as $topping)
-                                                <div class="col-md-4 col-sm-6">
-                                                    <div class="form-check">
-                                                        <input class="form-check-input topping-checkbox" type="checkbox" name="toppings[]" 
-                                                            id="topping-{{ $topping->id }}" value="{{ $topping->id }}"
-                                                            data-counts-as="{{ $topping->counts_as }}"
-                                                            @if($product->max_toppings) data-max-toppings="{{ $product->max_toppings }}" @endif>
-                                                        <label class="form-check-label" for="topping-{{ $topping->id }}">
-                                                            {{ $topping->name }}
-                                                        </label>
-                                                    </div>
-                                                </div>
-                                            @endforeach
-                                        @endif
-                                        
-                                        @if($cheeseToppings->count() > 0)
-                                            <div class="col-12 mb-2 mt-3">
-                                                <h6 class="fw-bold text-warning">Cheeses</h6>
-                                            </div>
-                                            @foreach($cheeseToppings as $topping)
-                                                <div class="col-md-4 col-sm-6">
-                                                    <div class="form-check">
-                                                        <input class="form-check-input topping-checkbox" type="checkbox" name="toppings[]" 
-                                                            id="topping-{{ $topping->id }}" value="{{ $topping->id }}"
-                                                            data-counts-as="{{ $topping->counts_as }}"
-                                                            @if($product->max_toppings) data-max-toppings="{{ $product->max_toppings }}" @endif>
-                                                        <label class="form-check-label" for="topping-{{ $topping->id }}">
-                                                            {{ $topping->name }}
-                                                        </label>
-                                                    </div>
-                                                </div>
-                                            @endforeach
-                                        @endif
-                                        
-                                        @if($product->max_toppings)
-                                            <div class="col-12 mt-3">
-                                                <div class="alert alert-info">
-                                                    <i class="bi bi-info-circle-fill me-2"></i>
-                                                    <span>Selected: <span id="topping-count">0</span> of {{ $product->max_toppings }} toppings</span>
-                                                    <span id="extra-toppings-message" class="d-none">
-                                                        (<span id="extra-toppings-count">0</span> extra topping(s) will be charged at $<span id="extra-topping-price">
-                                                            @php
-                                                                $addOns = json_decode($product->add_ons ?? '{}', true);
-                                                                $extraToppingPrice = $addOns['extra_topping_price'] ?? 0;
-                                                                echo number_format($extraToppingPrice, 2);
-                                                            @endphp
-                                                        </span> each)
-                                                    </span>
-                                                </div>
-                                            </div>
-                                        @endif
-                                    </div>
-                                </div>
-                                
-                                <!-- Extra Toppings Option - Only show if show_extra_toppings_toggle is enabled -->
-                                @php
-                                    $addOns = json_decode($product->add_ons ?? '{}', true);
-                                    $showExtraToppingsToggle = $addOns['show_extra_toppings_toggle'] ?? false;
-                                @endphp
-                                
-                                @if($showExtraToppingsToggle)
-                                <div class="mt-4 mb-4">
-                                    <h5 class="fw-bold mb-3">Add Extra Toppings?</h5>
-                                    <div class="form-check form-check-inline">
-                                        <input class="form-check-input" type="radio" name="add_extra_toppings" id="add-extra-toppings-no" value="no" checked>
-                                        <label class="form-check-label" for="add-extra-toppings-no">No</label>
-                                    </div>
-                                    <div class="form-check form-check-inline">
-                                        <input class="form-check-input" type="radio" name="add_extra_toppings" id="add-extra-toppings-yes" value="yes" style="background-color: #dc3545; border-color: #dc3545;">
-                                        <label class="form-check-label" for="add-extra-toppings-yes" style="color: #dc3545; font-weight: bold;">Yes</label>
-                                    </div>
-                                    
-                                    <!-- Extra toppings selection (initially hidden) -->
-                                    <div id="extra-toppings-container" class="mt-3 d-none">
-                                        <div class="row g-2">
+                                        <!-- Selectable toppings for custom pizza -->
+                                        <div class="row g-2 toppings-container">
+                                            @php
+                                                $meatToppings = $toppings->where('category', 'meat');
+                                                $veggieToppings = $toppings->where('category', 'veggie');
+                                                $cheeseToppings = $toppings->where('category', 'cheese');
+                                            @endphp
+                                            
                                             @if($meatToppings->count() > 0)
                                                 <div class="col-12 mb-2">
                                                     <h6 class="fw-bold text-danger">Meats</h6>
@@ -457,11 +357,11 @@
                                                 @foreach($meatToppings as $topping)
                                                     <div class="col-md-4 col-sm-6">
                                                         <div class="form-check">
-                                                            <input class="form-check-input extra-topping-checkbox" type="checkbox" name="extra_toppings[]" 
-                                                                id="extra-topping-{{ $topping->id }}" value="{{ $topping->id }}"
+                                                            <input class="form-check-input topping-checkbox" type="checkbox" name="toppings[]" 
+                                                                id="topping-{{ $topping->id }}" value="{{ $topping->id }}"
                                                                 data-counts-as="{{ $topping->counts_as }}"
-                                                                data-size="{{ isset($firstSize) ? $firstSize : '' }}">
-                                                            <label class="form-check-label" for="extra-topping-{{ $topping->id }}">
+                                                                @if($product->max_toppings) data-max-toppings="{{ $product->max_toppings }}" @endif>
+                                                            <label class="form-check-label" for="topping-{{ $topping->id }}">
                                                                 {{ $topping->name }}
                                                                 @if($topping->counts_as > 1)
                                                                     <span class="badge bg-danger">{{ $topping->counts_as }}x</span>
@@ -479,11 +379,11 @@
                                                 @foreach($veggieToppings as $topping)
                                                     <div class="col-md-4 col-sm-6">
                                                         <div class="form-check">
-                                                            <input class="form-check-input extra-topping-checkbox" type="checkbox" name="extra_toppings[]" 
-                                                                id="extra-topping-{{ $topping->id }}" value="{{ $topping->id }}"
+                                                            <input class="form-check-input topping-checkbox" type="checkbox" name="toppings[]" 
+                                                                id="topping-{{ $topping->id }}" value="{{ $topping->id }}"
                                                                 data-counts-as="{{ $topping->counts_as }}"
-                                                                data-size="{{ isset($firstSize) ? $firstSize : '' }}">
-                                                            <label class="form-check-label" for="extra-topping-{{ $topping->id }}">
+                                                                @if($product->max_toppings) data-max-toppings="{{ $product->max_toppings }}" @endif>
+                                                            <label class="form-check-label" for="topping-{{ $topping->id }}">
                                                                 {{ $topping->name }}
                                                             </label>
                                                         </div>
@@ -498,11 +398,11 @@
                                                 @foreach($cheeseToppings as $topping)
                                                     <div class="col-md-4 col-sm-6">
                                                         <div class="form-check">
-                                                            <input class="form-check-input extra-topping-checkbox" type="checkbox" name="extra_toppings[]" 
-                                                                id="extra-topping-{{ $topping->id }}" value="{{ $topping->id }}"
+                                                            <input class="form-check-input topping-checkbox" type="checkbox" name="toppings[]" 
+                                                                id="topping-{{ $topping->id }}" value="{{ $topping->id }}"
                                                                 data-counts-as="{{ $topping->counts_as }}"
-                                                                data-size="{{ isset($firstSize) ? $firstSize : '' }}">
-                                                            <label class="form-check-label" for="extra-topping-{{ $topping->id }}">
+                                                                @if($product->max_toppings) data-max-toppings="{{ $product->max_toppings }}" @endif>
+                                                            <label class="form-check-label" for="topping-{{ $topping->id }}">
                                                                 {{ $topping->name }}
                                                             </label>
                                                         </div>
@@ -510,28 +410,130 @@
                                                 @endforeach
                                             @endif
                                             
-                                            <div class="col-12 mt-3">
-                                                <div class="alert alert-danger">
-                                                    <i class="bi bi-info-circle-fill me-2"></i>
-                                                    <span>Extra toppings: <span id="extra-topping-count">0</span> selected ($<span id="extra-topping-price-display">
-                                                        @php
-                                                            $addOns = json_decode($product->add_ons ?? '{}', true);
-                                                            $extraToppingPrice = 0;
-                                                            if (isset($addOns['extra_topping_price'])) {
-                                                                if (is_array($addOns['extra_topping_price']) && isset($addOns['extra_topping_price'][$firstSize])) {
-                                                                    $extraToppingPrice = $addOns['extra_topping_price'][$firstSize];
-                                                                } elseif (!is_array($addOns['extra_topping_price'])) {
-                                                                    $extraToppingPrice = $addOns['extra_topping_price'];
+                                            @if($product->max_toppings)
+                                                <div class="col-12 mt-3">
+                                                    <div class="alert alert-info">
+                                                        <i class="bi bi-info-circle-fill me-2"></i>
+                                                        <span>Selected: <span id="topping-count">0</span> of {{ $product->max_toppings }} toppings</span>
+                                                        <span id="extra-toppings-message" class="d-none">
+                                                            (<span id="extra-toppings-count">0</span> extra topping(s) will be charged at $<span id="extra-topping-price">
+                                                                @php
+                                                                    $addOns = json_decode($product->add_ons ?? '{}', true);
+                                                                    $extraToppingPrice = $addOns['extra_topping_price'] ?? 0;
+                                                                    echo number_format($extraToppingPrice, 2);
+                                                                @endphp
+                                                            </span> each)
+                                                        </span>
+                                                    </div>
+                                                </div>
+                                            @endif
+                                        </div>
+                                    </div>
+                                    
+                                    <!-- Extra Toppings Option - Only show if show_extra_toppings_toggle is enabled -->
+                                    @php
+                                        $addOns = json_decode($product->add_ons ?? '{}', true);
+                                        $showExtraToppingsToggle = $addOns['show_extra_toppings_toggle'] ?? false;
+                                    @endphp
+                                    
+                                    @if($showExtraToppingsToggle)
+                                    <div class="mt-4 mb-4">
+                                        <h5 class="fw-bold mb-3">Add Extra Toppings?</h5>
+                                        <div class="form-check form-check-inline">
+                                            <input class="form-check-input" type="radio" name="add_extra_toppings" id="add-extra-toppings-no" value="no" checked>
+                                            <label class="form-check-label" for="add-extra-toppings-no">No</label>
+                                        </div>
+                                        <div class="form-check form-check-inline">
+                                            <input class="form-check-input" type="radio" name="add_extra_toppings" id="add-extra-toppings-yes" value="yes" style="background-color: #dc3545; border-color: #dc3545;">
+                                            <label class="form-check-label" for="add-extra-toppings-yes" style="color: #dc3545; font-weight: bold;">Yes</label>
+                                        </div>
+                                        
+                                        <!-- Extra toppings selection (initially hidden) -->
+                                        <div id="extra-toppings-container" class="mt-3 d-none">
+                                            <div class="row g-2">
+                                                @if($meatToppings->count() > 0)
+                                                    <div class="col-12 mb-2">
+                                                        <h6 class="fw-bold text-danger">Meats</h6>
+                                                    </div>
+                                                    @foreach($meatToppings as $topping)
+                                                        <div class="col-md-4 col-sm-6">
+                                                            <div class="form-check">
+                                                                <input class="form-check-input extra-topping-checkbox" type="checkbox" name="extra_toppings[]" 
+                                                                    id="extra-topping-{{ $topping->id }}" value="{{ $topping->id }}"
+                                                                    data-counts-as="{{ $topping->counts_as }}"
+                                                                    data-size="{{ isset($firstSize) ? $firstSize : '' }}">
+                                                                <label class="form-check-label" for="extra-topping-{{ $topping->id }}">
+                                                                    {{ $topping->name }}
+                                                                    @if($topping->counts_as > 1)
+                                                                        <span class="badge bg-danger">{{ $topping->counts_as }}x</span>
+                                                                    @endif
+                                                                </label>
+                                                            </div>
+                                                        </div>
+                                                    @endforeach
+                                                @endif
+                                                
+                                                @if($veggieToppings->count() > 0)
+                                                    <div class="col-12 mb-2 mt-3">
+                                                        <h6 class="fw-bold text-success">Veggies</h6>
+                                                    </div>
+                                                    @foreach($veggieToppings as $topping)
+                                                        <div class="col-md-4 col-sm-6">
+                                                            <div class="form-check">
+                                                                <input class="form-check-input extra-topping-checkbox" type="checkbox" name="extra_toppings[]" 
+                                                                    id="extra-topping-{{ $topping->id }}" value="{{ $topping->id }}"
+                                                                    data-counts-as="{{ $topping->counts_as }}"
+                                                                    data-size="{{ isset($firstSize) ? $firstSize : '' }}">
+                                                                <label class="form-check-label" for="extra-topping-{{ $topping->id }}">
+                                                                    {{ $topping->name }}
+                                                                </label>
+                                                            </div>
+                                                        </div>
+                                                    @endforeach
+                                                @endif
+                                                
+                                                @if($cheeseToppings->count() > 0)
+                                                    <div class="col-12 mb-2 mt-3">
+                                                        <h6 class="fw-bold text-warning">Cheeses</h6>
+                                                    </div>
+                                                    @foreach($cheeseToppings as $topping)
+                                                        <div class="col-md-4 col-sm-6">
+                                                            <div class="form-check">
+                                                                <input class="form-check-input extra-topping-checkbox" type="checkbox" name="extra_toppings[]" 
+                                                                    id="extra-topping-{{ $topping->id }}" value="{{ $topping->id }}"
+                                                                    data-counts-as="{{ $topping->counts_as }}"
+                                                                    data-size="{{ isset($firstSize) ? $firstSize : '' }}">
+                                                                <label class="form-check-label" for="extra-topping-{{ $topping->id }}">
+                                                                    {{ $topping->name }}
+                                                                </label>
+                                                            </div>
+                                                        </div>
+                                                    @endforeach
+                                                @endif
+                                                
+                                                <div class="col-12 mt-3">
+                                                    <div class="alert alert-danger">
+                                                        <i class="bi bi-info-circle-fill me-2"></i>
+                                                        <span>Extra toppings: <span id="extra-topping-count">0</span> selected ($<span id="extra-topping-price-display">
+                                                            @php
+                                                                $addOns = json_decode($product->add_ons ?? '{}', true);
+                                                                $extraToppingPrice = 0;
+                                                                if (isset($addOns['extra_topping_price'])) {
+                                                                    if (is_array($addOns['extra_topping_price']) && isset($addOns['extra_topping_price'][$firstSize])) {
+                                                                        $extraToppingPrice = $addOns['extra_topping_price'][$firstSize];
+                                                                    } elseif (!is_array($addOns['extra_topping_price'])) {
+                                                                        $extraToppingPrice = $addOns['extra_topping_price'];
+                                                                    }
                                                                 }
-                                                            }
-                                                            echo number_format($extraToppingPrice, 2);
-                                                        @endphp
-                                                    </span> each)</span>
+                                                                echo number_format($extraToppingPrice, 2);
+                                                            @endphp
+                                                        </span> each)</span>
+                                                    </div>
                                                 </div>
                                             </div>
                                         </div>
                                     </div>
-                                </div>
+                                    @endif
                                 @endif
                             @endif
                         @endif

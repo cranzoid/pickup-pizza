@@ -2,7 +2,10 @@
 
 namespace App\Http\Controllers;
 
+use App\Helpers\EmailHelper;
 use App\Helpers\PickupTimeHelper;
+use App\Mail\NewOrderNotification;
+use App\Mail\OrderConfirmation;
 use App\Models\Order;
 use App\Models\OrderItem;
 use App\Models\Setting;
@@ -266,13 +269,17 @@ class CheckoutController extends Controller
             $orderItem->subtotal = $item['unit_price'] * $item['quantity'];
             $orderItem->is_upsell = $item['is_upsell'] ?? false;
             
-            // Store options as JSON
-            $options = [
-                'size' => $item['size'] ?? null,
-                'toppings' => $item['options']['toppings'] ?? [],
-                'extras' => $item['options']['extras'] ?? [],
-                'notes' => $item['notes'] ?? null,
-            ];
+            // Store ALL options as JSON - include everything from the cart item options
+            $options = $item['options'] ?? [];
+            
+            // Add some standard fields if they don't exist in options already
+            if (!isset($options['size']) && isset($item['size'])) {
+                $options['size'] = $item['size'];
+            }
+            
+            if (isset($item['notes']) && !empty($item['notes'])) {
+                $options['notes'] = $item['notes'];
+            }
             
             $orderItem->options = json_encode($options);
             
@@ -298,15 +305,11 @@ class CheckoutController extends Controller
     private function sendOrderConfirmationEmails(Order $order)
     {
         try {
-            // Get admin email from settings
-            $settings = new Setting();
-            $adminEmail = $settings->get('contact_email', 'admin@pisapizza.ca');
-            
             // Send customer confirmation email
-            \Mail::to($order->customer_email)->send(new \App\Mail\OrderConfirmation($order));
+            \Mail::to($order->customer_email)->send(new OrderConfirmation($order));
             
-            // Send admin notification email
-            \Mail::to($adminEmail)->send(new \App\Mail\NewOrderNotification($order));
+            // Send admin notification email to admins
+            EmailHelper::sendToAdmins(new NewOrderNotification($order));
         } catch (\Exception $e) {
             // Log the error but don't stop the process
             \Log::error('Failed to send order confirmation emails: ' . $e->getMessage());

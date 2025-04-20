@@ -84,6 +84,10 @@
                                                         <span class="badge bg-light text-dark mb-1 text-capitalize">Size: {{ $item['size'] }}</span>
                                                     @endif
                                                     
+                                                    @if(!empty($item['options']['is_two_for_one'] ?? false))
+                                                        <span class="badge bg-danger mb-1">2-for-1 Special</span>
+                                                    @endif
+                                                    
                                                     @php
                                                         $hasToppings = !empty($item['options']['toppings'] ?? []) && count($item['options']['toppings'] ?? []) > 0;
                                                     @endphp

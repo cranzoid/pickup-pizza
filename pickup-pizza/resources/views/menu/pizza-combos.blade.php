@@ -415,11 +415,11 @@
                 @endphp
                 
                 <div class="form-check form-check-inline">
-                    <input class="form-check-input" type="radio" name="add_third_pizza" id="add-third-pizza-no" value="no" checked>
+                    <input class="form-check-input" type="radio" name="third_pizza" id="add-third-pizza-no" value="no" checked>
                     <label class="form-check-label" for="add-third-pizza-no">No</label>
                 </div>
                 <div class="form-check form-check-inline">
-                    <input class="form-check-input" type="radio" name="add_third_pizza" id="add-third-pizza-yes" value="yes" style="background-color: #dc3545; border-color: #dc3545;">
+                    <input class="form-check-input" type="radio" name="third_pizza" id="add-third-pizza-yes" value="yes" style="background-color: #dc3545; border-color: #dc3545;">
                     <label class="form-check-label" for="add-third-pizza-yes" style="color: #dc3545; font-weight: bold;">Yes (+${{ number_format($thirdPizzaPrice, 2) }})</label>
                 </div>
                 
@@ -440,7 +440,7 @@
                             @foreach($meatToppings as $topping)
                                 <div class="col-md-4 col-sm-6">
                                     <div class="form-check">
-                                        <input class="form-check-input third-pizza-topping" type="checkbox" name="third_pizza_toppings[]" 
+                                        <input class="form-check-input third-pizza-topping" type="checkbox" name="pizza_3_toppings[]" 
                                             id="third-pizza-topping-{{ $topping->id }}" value="{{ $topping->id }}"
                                             data-counts-as="{{ $topping->counts_as }}"
                                             @if($product->max_toppings) data-max-toppings="{{ $product->max_toppings }}" @endif>
@@ -462,7 +462,7 @@
                             @foreach($veggieToppings as $topping)
                                 <div class="col-md-4 col-sm-6">
                                     <div class="form-check">
-                                        <input class="form-check-input third-pizza-topping" type="checkbox" name="third_pizza_toppings[]" 
+                                        <input class="form-check-input third-pizza-topping" type="checkbox" name="pizza_3_toppings[]" 
                                             id="third-pizza-topping-{{ $topping->id }}" value="{{ $topping->id }}"
                                             data-counts-as="{{ $topping->counts_as }}"
                                             @if($product->max_toppings) data-max-toppings="{{ $product->max_toppings }}" @endif>
@@ -481,7 +481,7 @@
                             @foreach($cheeseToppings as $topping)
                                 <div class="col-md-4 col-sm-6">
                                     <div class="form-check">
-                                        <input class="form-check-input third-pizza-topping" type="checkbox" name="third_pizza_toppings[]" 
+                                        <input class="form-check-input third-pizza-topping" type="checkbox" name="pizza_3_toppings[]" 
                                             id="third-pizza-topping-{{ $topping->id }}" value="{{ $topping->id }}"
                                             data-counts-as="{{ $topping->counts_as }}"
                                             @if($product->max_toppings) data-max-toppings="{{ $product->max_toppings }}" @endif>
@@ -671,22 +671,22 @@
                 <h5 class="fw-bold mb-3">Free Garlic Bread</h5>
                 
                 <div class="form-check form-check-inline">
-                    <input class="form-check-input" type="radio" name="add_garlic_bread" id="add-garlic-bread-yes" value="yes" checked>
+                    <input class="form-check-input" type="radio" name="garlic_bread" id="add-garlic-bread-yes" value="yes" checked>
                     <label class="form-check-label" for="add-garlic-bread-yes">Yes</label>
                 </div>
                 <div class="form-check form-check-inline">
-                    <input class="form-check-input" type="radio" name="add_garlic_bread" id="add-garlic-bread-no" value="no">
+                    <input class="form-check-input" type="radio" name="garlic_bread" id="add-garlic-bread-no" value="no">
                     <label class="form-check-label" for="add-garlic-bread-no">No</label>
                 </div>
                 
                 <div id="garlic-bread-cheese-container" class="mt-3">
                     <p class="mb-2">Add cheese to your garlic bread?</p>
                     <div class="form-check form-check-inline">
-                        <input class="form-check-input" type="radio" name="add_cheese_to_garlic_bread" id="add-cheese-no" value="no" checked>
+                        <input class="form-check-input" type="radio" name="garlic_bread_add_cheese" id="add-cheese-no" value="no" checked>
                         <label class="form-check-label" for="add-cheese-no">No ($0.00)</label>
                     </div>
                     <div class="form-check form-check-inline">
-                        <input class="form-check-input" type="radio" name="add_cheese_to_garlic_bread" id="add-cheese-yes" value="yes" style="background-color: #dc3545; border-color: #dc3545;">
+                        <input class="form-check-input" type="radio" name="garlic_bread_add_cheese" id="add-cheese-yes" value="yes" style="background-color: #dc3545; border-color: #dc3545;">
                         <label class="form-check-label" for="add-cheese-yes" style="color: #dc3545; font-weight: bold;">Yes (+$1.50)</label>
                     </div>
                 </div>
@@ -944,10 +944,44 @@ document.addEventListener('DOMContentLoaded', function() {
     // Add price indicators to the page
     const priceDisplay = document.createElement('div');
     priceDisplay.className = 'alert alert-success mt-4';
+    
+    // Get topping price based on size
+    function getExtraToppingPriceDisplay(size) {
+        switch(size) {
+            case 'medium':
+                return '1.60';
+            case 'large':
+                return '2.10';
+            case 'xl':
+            case 'extra_large':
+                return '2.30';
+            case 'jumbo':
+            case 'slab':
+                return '2.90';
+            default:
+                return '1.60'; // Default to medium if unknown
+        }
+    }
+    
+    // Get current size
+    function getCurrentSize() {
+        const sizeRadios = document.querySelectorAll('input[name="size"]');
+        for (const radio of sizeRadios) {
+            if (radio.checked) {
+                return radio.value;
+            }
+        }
+        return 'medium'; // Default to medium
+    }
+    
+    // Update the initial price display
+    const currentSize = getCurrentSize();
+    const extraToppingPriceValue = getExtraToppingPriceDisplay(currentSize);
+    
     priceDisplay.innerHTML = `
         <h5 class="mb-2">Order Summary</h5>
         <div>Base Price: $<span id="base-price">${basePrice.toFixed(2)}</span></div>
-        <div class="extra-toppings-price">Extra Toppings: $<span id="extra-toppings-price">0.00</span></div>
+        <div class="extra-toppings-price">Extra Toppings ($<span id="extra-topping-price-per-item">${extraToppingPriceValue}</span>/each): $<span id="extra-toppings-price">0.00</span></div>
         <div class="mt-2 fw-bold">Total: $<span id="total-price">${basePrice.toFixed(2)}</span></div>
     `;
     
@@ -1179,6 +1213,17 @@ document.addEventListener('DOMContentLoaded', function() {
             updateTotalPrice();
         });
     }
+
+    // Update price per topping when size changes
+    const sizeRadios = document.querySelectorAll('input[name="size"]');
+    sizeRadios.forEach(radio => {
+        radio.addEventListener('change', function() {
+            const size = this.value;
+            const pricePerItem = getExtraToppingPriceDisplay(size);
+            document.getElementById('extra-topping-price-per-item').textContent = pricePerItem;
+            updateTotalPrice();
+        });
+    });
 });
 </script>
 @endpush 

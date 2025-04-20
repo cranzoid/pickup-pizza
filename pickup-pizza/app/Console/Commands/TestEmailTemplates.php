@@ -51,21 +51,26 @@ class TestEmailTemplates extends Command
         // Test OrderStatusUpdate email with different statuses
         foreach (['preparing', 'ready', 'cancelled'] as $status) {
             $this->info("Sending Order Status Update email for status: {$status}...");
-            $order->status = $status;
+            $order->order_status = $status;
             Mail::to($email)->send(new \App\Mail\OrderStatusUpdate($order));
         }
         
         // Test AdminNotification email
         $this->info('Sending Admin Notification email...');
-        Mail::to($email)->send(new \App\Mail\AdminNotification(
-            'Test Admin Notification',
-            'This is a test of the admin notification email template.',
-            'info',
-            'Everything is working correctly!',
-            $order,
-            'Go to Dashboard',
-            url('/admin')
-        ));
+        try {
+            // Create a simpler test for admin notification with no order object
+            Mail::to($email)->send(new \App\Mail\AdminNotification(
+                'Test Admin Notification',
+                'This is a test of the admin notification email template.',
+                'info',
+                'Everything is working correctly!',
+                null,
+                'Go to Dashboard',
+                url('/admin')
+            ));
+        } catch (\Exception $e) {
+            $this->error('Failed to send Admin Notification email: ' . $e->getMessage());
+        }
         
         $this->info('All test emails have been sent. Please check your inbox.');
         

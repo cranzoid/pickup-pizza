@@ -16,15 +16,20 @@ class Category extends Model
         'description',
         'image',
         'sort_order',
-        'active',
+        'is_active',
         'is_daily_special',
         'day_of_week',
+        'display_order',
+        'day_specific',
+        'specific_day',
     ];
     
     protected $casts = [
-        'active' => 'boolean',
+        'is_active' => 'boolean',
         'is_daily_special' => 'boolean',
         'sort_order' => 'integer',
+        'display_order' => 'integer',
+        'day_specific' => 'boolean',
     ];
     
     /**
@@ -48,7 +53,7 @@ class Category extends Model
      */
     public function scopeActive($query)
     {
-        return $query->where('active', true);
+        return $query->where('is_active', true);
     }
     
     /**
@@ -56,7 +61,7 @@ class Category extends Model
      */
     public function scopeSorted($query)
     {
-        return $query->orderBy('sort_order', 'asc');
+        return $query->orderBy('display_order', 'asc');
     }
     
     /**

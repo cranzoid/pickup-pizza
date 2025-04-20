@@ -67,7 +67,7 @@
         
         <div class="content">
             <h2>Thank You for Your Order!</h2>
-            <p>Dear {{ $order->name }},</p>
+            <p>Dear {{ $order->customer_name }},</p>
             <p>We've received your order and are preparing it for pickup. Please find your order details below:</p>
             
             <div class="order-details">
@@ -90,7 +90,7 @@
                     </tr>
                 </thead>
                 <tbody>
-                    @foreach($order->orderItems as $item)
+                    @foreach($order->items as $item)
                         @php
                             $options = json_decode($item->options, true);
                         @endphp

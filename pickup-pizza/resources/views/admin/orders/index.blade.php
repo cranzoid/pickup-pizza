@@ -61,18 +61,18 @@
                         <tr>
                             <td>{{ $order->order_number }}</td>
                             <td>{{ $order->created_at->format('M d, Y H:i') }}</td>
-                            <td>{{ $order->name }}</td>
-                            <td>{{ $order->phone }}</td>
-                            <td>{{ date('M d, Y', strtotime($order->pickup_date)) }} at {{ date('g:i A', strtotime($order->pickup_time)) }}</td>
+                            <td>{{ $order->customer_name }}</td>
+                            <td>{{ $order->customer_phone }}</td>
+                            <td>{{ $order->pickup_time->format('M d, Y') }} at {{ $order->pickup_time->format('g:i A') }}</td>
                             <td>${{ number_format($order->total, 2) }}</td>
                             <td>
                                 <span class="badge bg-{{ 
-                                    $order->status === 'pending' ? 'warning' : 
-                                    ($order->status === 'preparing' ? 'info' : 
-                                    ($order->status === 'ready' ? 'primary' : 
-                                    ($order->status === 'picked_up' ? 'success' : 'danger'))) 
+                                    $order->order_status === 'pending' ? 'warning' : 
+                                    ($order->order_status === 'preparing' ? 'info' : 
+                                    ($order->order_status === 'ready' ? 'primary' : 
+                                    ($order->order_status === 'picked_up' ? 'success' : 'danger'))) 
                                 }}">
-                                    {{ ucfirst($order->status) }}
+                                    {{ ucfirst($order->order_status) }}
                                 </span>
                             </td>
                             <td>

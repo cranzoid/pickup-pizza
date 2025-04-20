@@ -27,7 +27,7 @@ class Product extends Model
         'has_size_options',
         'has_toppings',
         'has_extras',
-        'active',
+        'is_active',
         'is_featured',
         'sort_order',
         'display_day',
@@ -43,7 +43,7 @@ class Product extends Model
         'has_size_options' => 'boolean',
         'has_toppings' => 'boolean',
         'has_extras' => 'boolean',
-        'active' => 'boolean',
+        'is_active' => 'boolean',
         'is_featured' => 'boolean',
         'sort_order' => 'integer',
         'max_toppings' => 'integer',
@@ -113,7 +113,7 @@ class Product extends Model
      */
     public function scopeActive($query)
     {
-        return $query->where('active', true);
+        return $query->where('is_active', true);
     }
     
     /**

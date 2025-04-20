@@ -52,10 +52,10 @@ class DashboardController extends Controller
             : 100;
         
         // Orders by status
-        $pendingOrdersCount = Order::where('status', 'pending')->count();
-        $preparingOrdersCount = Order::where('status', 'preparing')->count();
-        $readyOrdersCount = Order::where('status', 'ready')->count();
-        $pickedUpOrdersCount = Order::where('status', 'picked_up')->count();
+        $pendingOrdersCount = Order::where('order_status', 'pending')->count();
+        $preparingOrdersCount = Order::where('order_status', 'preparing')->count();
+        $readyOrdersCount = Order::where('order_status', 'ready')->count();
+        $pickedUpOrdersCount = Order::where('order_status', 'picked_up')->count();
         
         // Recent orders
         $recentOrders = Order::orderBy('created_at', 'desc')
@@ -63,8 +63,8 @@ class DashboardController extends Controller
             ->get();
         
         // Upcoming pickups for today
-        $upcomingPickups = Order::whereDate('pickup_date', today())
-            ->whereIn('status', ['pending', 'preparing', 'ready'])
+        $upcomingPickups = Order::whereDate('pickup_time', today())
+            ->whereIn('order_status', ['pending', 'preparing', 'ready'])
             ->orderBy('pickup_time')
             ->take(10)
             ->get();
@@ -101,8 +101,8 @@ class DashboardController extends Controller
         }
         
         // Popular items
-        $popularItems = OrderItem::select('product_name as name', DB::raw('SUM(quantity) as count'))
-            ->groupBy('product_name')
+        $popularItems = OrderItem::select('name', DB::raw('SUM(quantity) as count'))
+            ->groupBy('name')
             ->orderByDesc('count')
             ->take(5)
             ->get();

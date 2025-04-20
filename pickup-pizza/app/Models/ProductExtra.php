@@ -23,7 +23,7 @@ class ProductExtra extends Model
         'price',
         'category_id',
         'image',
-        'active',
+        'is_active',
         'max_quantity',
         'is_default'
     ];
@@ -35,7 +35,7 @@ class ProductExtra extends Model
      */
     protected $casts = [
         'price' => 'decimal:2',
-        'active' => 'boolean',
+        'is_active' => 'boolean',
         'is_default' => 'boolean',
     ];
 
@@ -65,7 +65,7 @@ class ProductExtra extends Model
      */
     public function scopeActive($query)
     {
-        return $query->where('active', true);
+        return $query->where('is_active', true);
     }
 
     /**

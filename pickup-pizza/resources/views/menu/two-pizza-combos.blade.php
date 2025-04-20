@@ -137,12 +137,12 @@
                         <input class="form-check-input" type="radio" name="add_first_pizza_extra_toppings" id="add-first-pizza-toppings-yes" value="yes" style="background-color: #dc3545; border-color: #dc3545;">
                         <label class="form-check-label" for="add-first-pizza-toppings-yes" style="color: #dc3545; font-weight: bold;">Yes</label>
                     </div>
-                    <small class="d-block mt-1 text-muted">
+                    <small class="d-block mt-1 mb-2 text-danger fw-bold">
                         @php
                             $addOns = json_decode($product->add_ons ?? '{}', true);
                             $extraToppingPrice = $addOns['extra_topping_price'] ?? 0;
                         @endphp
-                        Extra toppings cost ${{ number_format($extraToppingPrice, 2) }} each
+                        Extra toppings cost ${{ number_format($extraToppingPrice, 2) }} each (additional charge)
                     </small>
                     
                     <!-- Extra toppings selection (initially hidden) -->
@@ -308,8 +308,8 @@
                         <input class="form-check-input" type="radio" name="add_second_pizza_extra_toppings" id="add-second-pizza-toppings-yes" value="yes" style="background-color: #dc3545; border-color: #dc3545;">
                         <label class="form-check-label" for="add-second-pizza-toppings-yes" style="color: #dc3545; font-weight: bold;">Yes</label>
                     </div>
-                    <small class="d-block mt-1 text-muted">
-                        Extra toppings cost ${{ number_format($extraToppingPrice, 2) }} each
+                    <small class="d-block mt-1 mb-2 text-danger fw-bold">
+                        Extra toppings cost ${{ number_format($extraToppingPrice, 2) }} each (additional charge)
                     </small>
                     
                     <!-- Extra toppings selection for second pizza (initially hidden) -->
@@ -379,7 +379,7 @@
                     </div>
                 </div>
 
-                <!-- Wing Flavors
+                <!-- Wing Flavors -->
                 <div class="mb-4 mt-5">
                     <h5 class="fw-bold mb-3">Wing Flavors</h5>
                     <p class="mb-2">Select your wing flavors</p>
@@ -396,200 +396,9 @@
                         <option value="9">Honey Hot</option>
                         <option value="10">Dry Cajun</option>
                     </select>
-                </div> -->
-
-                <!-- Add 3rd Pizza Option -->
-                <div class="mb-4 mt-5">
-                    <h5 class="fw-bold mb-3">Add a 3rd Pizza?</h5>
-                    
-                    @php
-                        $thirdPizzaPrice = 0;
-                        if (strpos($product->name, 'Medium') !== false) {
-                            $thirdPizzaPrice = 10.99;
-                        } elseif (strpos($product->name, 'Large') !== false) {
-                            $thirdPizzaPrice = 12.99;
-                        } elseif (strpos($product->name, 'X-Large') !== false) {
-                            $thirdPizzaPrice = 13.99;
-                        }
-                    @endphp
-                    
-                    <div class="form-check form-check-inline">
-                        <input class="form-check-input" type="radio" name="add_third_pizza" id="add-third-pizza-no" value="no" checked>
-                        <label class="form-check-label" for="add-third-pizza-no">No</label>
-                    </div>
-                    <div class="form-check form-check-inline">
-                        <input class="form-check-input" type="radio" name="add_third_pizza" id="add-third-pizza-yes" value="yes" style="background-color: #dc3545; border-color: #dc3545;">
-                        <label class="form-check-label" for="add-third-pizza-yes" style="color: #dc3545; font-weight: bold;">Yes (+${{ number_format($thirdPizzaPrice, 2) }})</label>
-                    </div>
-                    
-                    <!-- Third Pizza Toppings (initially hidden) -->
-                    <div id="third-pizza-container" class="mt-4 d-none">
-                        <div class="my-4">
-                            <hr>
-                            <h4 class="text-center fw-bold py-3">THIRD PIZZA</h4>
-                            <hr>
-                        </div>
-                        
-                        <h5 class="fw-bold mb-3">Third Pizza Toppings <small class="text-muted">(Max {{ $product->max_toppings }} toppings)</small></h5>
-                        <div class="row g-2 third-pizza-toppings-container">
-                            @if($meatToppings->count() > 0)
-                                <div class="col-12 mb-2">
-                                    <h6 class="fw-bold text-danger">Meats</h6>
-                                </div>
-                                @foreach($meatToppings as $topping)
-                                    <div class="col-md-4 col-sm-6">
-                                        <div class="form-check">
-                                            <input class="form-check-input third-pizza-topping" type="checkbox" name="third_pizza_toppings[]" 
-                                                id="third-pizza-topping-{{ $topping->id }}" value="{{ $topping->id }}"
-                                                data-counts-as="{{ $topping->counts_as }}"
-                                                @if($product->max_toppings) data-max-toppings="{{ $product->max_toppings }}" @endif>
-                                            <label class="form-check-label" for="third-pizza-topping-{{ $topping->id }}">
-                                                {{ $topping->name }}
-                                                @if($topping->counts_as > 1)
-                                                    <span class="badge bg-danger">{{ $topping->counts_as }}x</span>
-                                                @endif
-                                            </label>
-                                        </div>
-                                    </div>
-                                @endforeach
-                            @endif
-                            
-                            @if($veggieToppings->count() > 0)
-                                <div class="col-12 mb-2 mt-3">
-                                    <h6 class="fw-bold text-success">Veggies</h6>
-                                </div>
-                                @foreach($veggieToppings as $topping)
-                                    <div class="col-md-4 col-sm-6">
-                                        <div class="form-check">
-                                            <input class="form-check-input third-pizza-topping" type="checkbox" name="third_pizza_toppings[]" 
-                                                id="third-pizza-topping-{{ $topping->id }}" value="{{ $topping->id }}"
-                                                data-counts-as="{{ $topping->counts_as }}"
-                                                @if($product->max_toppings) data-max-toppings="{{ $product->max_toppings }}" @endif>
-                                            <label class="form-check-label" for="third-pizza-topping-{{ $topping->id }}">
-                                                {{ $topping->name }}
-                                            </label>
-                                        </div>
-                                    </div>
-                                @endforeach
-                            @endif
-                            
-                            @if($cheeseToppings->count() > 0)
-                                <div class="col-12 mb-2 mt-3">
-                                    <h6 class="fw-bold text-warning">Cheeses</h6>
-                                </div>
-                                @foreach($cheeseToppings as $topping)
-                                    <div class="col-md-4 col-sm-6">
-                                        <div class="form-check">
-                                            <input class="form-check-input third-pizza-topping" type="checkbox" name="third_pizza_toppings[]" 
-                                                id="third-pizza-topping-{{ $topping->id }}" value="{{ $topping->id }}"
-                                                data-counts-as="{{ $topping->counts_as }}"
-                                                @if($product->max_toppings) data-max-toppings="{{ $product->max_toppings }}" @endif>
-                                            <label class="form-check-label" for="third-pizza-topping-{{ $topping->id }}">
-                                                {{ $topping->name }}
-                                            </label>
-                                        </div>
-                                    </div>
-                                @endforeach
-                            @endif
-                            
-                            @if($product->max_toppings)
-                                <div class="col-12 mt-3">
-                                    <div class="alert alert-info">
-                                        <i class="bi bi-info-circle-fill me-2"></i>
-                                        <span>Selected: <span id="third-pizza-topping-count">0</span> of {{ $product->max_toppings }} toppings</span>
-                                        <span id="third-pizza-extra-toppings-message" class="d-none">
-                                            (<span id="third-pizza-extra-toppings-count">0</span> extra topping(s) will be charged)
-                                        </span>
-                                    </div>
-                                </div>
-                            @endif
-                        </div>
-                        
-                        <!-- Third Pizza Extra Toppings option -->
-                        <div class="mt-4 mb-4">
-                            <h5 class="fw-bold mb-3">Add Extra Toppings to Third Pizza?</h5>
-                            <div class="form-check form-check-inline">
-                                <input class="form-check-input" type="radio" name="add_third_pizza_extra_toppings" id="add-third-pizza-toppings-no" value="no" checked>
-                                <label class="form-check-label" for="add-third-pizza-toppings-no">No</label>
-                            </div>
-                            <div class="form-check form-check-inline">
-                                <input class="form-check-input" type="radio" name="add_third_pizza_extra_toppings" id="add-third-pizza-toppings-yes" value="yes" style="background-color: #dc3545; border-color: #dc3545;">
-                                <label class="form-check-label" for="add-third-pizza-toppings-yes" style="color: #dc3545; font-weight: bold;">Yes</label>
-                            </div>
-                            <small class="d-block mt-1 text-muted">
-                                Extra toppings cost ${{ number_format($extraToppingPrice, 2) }} each
-                            </small>
-                            
-                            <!-- Extra toppings selection for third pizza (initially hidden) -->
-                            <div id="third-pizza-extra-toppings-container" class="mt-3 d-none">
-                                <div class="row g-2">
-                                    <div class="col-12 mb-2">
-                                        <h6 class="fw-bold text-danger">Meats</h6>
-                                    </div>
-                                    @foreach($meatToppings as $topping)
-                                        <div class="col-md-4 col-sm-6">
-                                            <div class="form-check">
-                                                <input class="form-check-input third-pizza-extra-topping" type="checkbox" name="third_pizza_extra_toppings[]" 
-                                                    id="third-pizza-extra-topping-{{ $topping->id }}" value="{{ $topping->id }}"
-                                                    data-counts-as="{{ $topping->counts_as }}"
-                                                    data-size="{{ $firstSize }}">
-                                                <label class="form-check-label" for="third-pizza-extra-topping-{{ $topping->id }}">
-                                                    {{ $topping->name }}
-                                                    @if($topping->counts_as > 1)
-                                                        <span class="badge bg-danger">{{ $topping->counts_as }}x</span>
-                                                    @endif
-                                                </label>
-                                            </div>
-                                        </div>
-                                    @endforeach
-                                    
-                                    <div class="col-12 mb-2 mt-3">
-                                        <h6 class="fw-bold text-success">Veggies</h6>
-                                    </div>
-                                    @foreach($veggieToppings as $topping)
-                                        <div class="col-md-4 col-sm-6">
-                                            <div class="form-check">
-                                                <input class="form-check-input third-pizza-extra-topping" type="checkbox" name="third_pizza_extra_toppings[]" 
-                                                    id="third-pizza-extra-topping-{{ $topping->id }}" value="{{ $topping->id }}"
-                                                    data-counts-as="{{ $topping->counts_as }}"
-                                                    data-size="{{ $firstSize }}">
-                                                <label class="form-check-label" for="third-pizza-extra-topping-{{ $topping->id }}">
-                                                    {{ $topping->name }}
-                                                </label>
-                                            </div>
-                                        </div>
-                                    @endforeach
-                                    
-                                    <div class="col-12 mb-2 mt-3">
-                                        <h6 class="fw-bold text-warning">Cheeses</h6>
-                                    </div>
-                                    @foreach($cheeseToppings as $topping)
-                                        <div class="col-md-4 col-sm-6">
-                                            <div class="form-check">
-                                                <input class="form-check-input third-pizza-extra-topping" type="checkbox" name="third_pizza_extra_toppings[]" 
-                                                    id="third-pizza-extra-topping-{{ $topping->id }}" value="{{ $topping->id }}"
-                                                    data-counts-as="{{ $topping->counts_as }}"
-                                                    data-size="{{ $firstSize }}">
-                                                <label class="form-check-label" for="third-pizza-extra-topping-{{ $topping->id }}">
-                                                    {{ $topping->name }}
-                                                </label>
-                                            </div>
-                                        </div>
-                                    @endforeach
-                                    
-                                    <div class="col-12 mt-3">
-                                        <div class="alert alert-info">
-                                            <i class="bi bi-info-circle-fill me-2"></i>
-                                            <span>Extra toppings: <span id="third-pizza-extra-topping-count">0</span> selected</span>
-                                        </div>
-                                    </div>
-                                </div>
-                            </div>
-                        </div>
-                    </div>
                 </div>
-                
-                <!-- Pop Selection
+
+                <!-- Pop Selection -->
                 <div class="mb-4 mt-5">
                     <h5 class="fw-bold mb-3">Pop Selection</h5>
                     <p class="mb-2">Choose your 4 included pops:</p>
@@ -598,155 +407,102 @@
                         <div class="col-md-6">
                             <label for="pop1" class="form-label">Pop 1:</label>
                             <select class="form-select" name="pop1" id="pop1">
+                                <option value="">Select a pop</option>
                                 <option value="Coke">Coke</option>
-                                <option value="Pepsi">Pepsi</option>
-                                <option value="Sprite">Sprite</option>
                                 <option value="Diet Coke">Diet Coke</option>
+                                <option value="Pepsi">Pepsi</option>
                                 <option value="Diet Pepsi">Diet Pepsi</option>
+                                <option value="Sprite">Sprite</option>
                                 <option value="Dr Pepper">Dr Pepper</option>
+                                <option value="Root Beer">Root Beer</option>
                                 <option value="Orange Crush">Orange Crush</option>
                                 <option value="Cream Soda">Cream Soda</option>
+                                <option value="Ginger Ale">Ginger Ale</option>
                                 <option value="Brisk Ice Tea">Brisk Ice Tea</option>
-                                <option value="Canada Dry">Canada Dry</option>
-                                <option value="Water bottle">Water bottle</option>
+                                <option value="Water">Water</option>
                             </select>
                         </div>
                         <div class="col-md-6">
                             <label for="pop2" class="form-label">Pop 2:</label>
                             <select class="form-select" name="pop2" id="pop2">
+                                <option value="">Select a pop</option>
                                 <option value="Coke">Coke</option>
-                                <option value="Pepsi">Pepsi</option>
-                                <option value="Sprite">Sprite</option>
                                 <option value="Diet Coke">Diet Coke</option>
+                                <option value="Pepsi">Pepsi</option>
                                 <option value="Diet Pepsi">Diet Pepsi</option>
+                                <option value="Sprite">Sprite</option>
                                 <option value="Dr Pepper">Dr Pepper</option>
+                                <option value="Root Beer">Root Beer</option>
                                 <option value="Orange Crush">Orange Crush</option>
                                 <option value="Cream Soda">Cream Soda</option>
+                                <option value="Ginger Ale">Ginger Ale</option>
                                 <option value="Brisk Ice Tea">Brisk Ice Tea</option>
-                                <option value="Canada Dry">Canada Dry</option>
-                                <option value="Water bottle">Water bottle</option>
+                                <option value="Water">Water</option>
                             </select>
                         </div>
                         <div class="col-md-6">
                             <label for="pop3" class="form-label">Pop 3:</label>
                             <select class="form-select" name="pop3" id="pop3">
+                                <option value="">Select a pop</option>
                                 <option value="Coke">Coke</option>
-                                <option value="Pepsi">Pepsi</option>
-                                <option value="Sprite">Sprite</option>
                                 <option value="Diet Coke">Diet Coke</option>
+                                <option value="Pepsi">Pepsi</option>
                                 <option value="Diet Pepsi">Diet Pepsi</option>
+                                <option value="Sprite">Sprite</option>
                                 <option value="Dr Pepper">Dr Pepper</option>
+                                <option value="Root Beer">Root Beer</option>
                                 <option value="Orange Crush">Orange Crush</option>
                                 <option value="Cream Soda">Cream Soda</option>
+                                <option value="Ginger Ale">Ginger Ale</option>
                                 <option value="Brisk Ice Tea">Brisk Ice Tea</option>
-                                <option value="Canada Dry">Canada Dry</option>
-                                <option value="Water bottle">Water bottle</option>
+                                <option value="Water">Water</option>
                             </select>
                         </div>
                         <div class="col-md-6">
                             <label for="pop4" class="form-label">Pop 4:</label>
                             <select class="form-select" name="pop4" id="pop4">
+                                <option value="">Select a pop</option>
                                 <option value="Coke">Coke</option>
-                                <option value="Pepsi">Pepsi</option>
-                                <option value="Sprite">Sprite</option>
                                 <option value="Diet Coke">Diet Coke</option>
+                                <option value="Pepsi">Pepsi</option>
                                 <option value="Diet Pepsi">Diet Pepsi</option>
+                                <option value="Sprite">Sprite</option>
                                 <option value="Dr Pepper">Dr Pepper</option>
+                                <option value="Root Beer">Root Beer</option>
                                 <option value="Orange Crush">Orange Crush</option>
                                 <option value="Cream Soda">Cream Soda</option>
+                                <option value="Ginger Ale">Ginger Ale</option>
                                 <option value="Brisk Ice Tea">Brisk Ice Tea</option>
-                                <option value="Canada Dry">Canada Dry</option>
-                                <option value="Water bottle">Water bottle</option>
+                                <option value="Water">Water</option>
                             </select>
                         </div>
                     </div>
-                </div> -->
-                
-                <!-- Garlic Bread Options
-                <div class="mb-4 mt-5">
-                    <h5 class="fw-bold mb-3">Free Garlic Bread</h5>
-                    
-                    <div class="form-check form-check-inline">
-                        <input class="form-check-input" type="radio" name="add_garlic_bread" id="add-garlic-bread-yes" value="yes" checked>
-                        <label class="form-check-label" for="add-garlic-bread-yes">Yes</label>
-                    </div>
-                    <div class="form-check form-check-inline">
-                        <input class="form-check-input" type="radio" name="add_garlic_bread" id="add-garlic-bread-no" value="no">
-                        <label class="form-check-label" for="add-garlic-bread-no">No</label>
-                    </div>
-                    
-                    <div id="garlic-bread-cheese-container" class="mt-3">
-                        <p class="mb-2">Add cheese to your garlic bread?</p>
-                        <div class="form-check form-check-inline">
-                            <input class="form-check-input" type="radio" name="add_cheese_to_garlic_bread" id="add-cheese-no" value="no" checked>
-                            <label class="form-check-label" for="add-cheese-no">No ($0.00)</label>
-                        </div>
-                        <div class="form-check form-check-inline">
-                            <input class="form-check-input" type="radio" name="add_cheese_to_garlic_bread" id="add-cheese-yes" value="yes" style="background-color: #dc3545; border-color: #dc3545;">
-                            <label class="form-check-label" for="add-cheese-yes" style="color: #dc3545; font-weight: bold;">Yes (+$1.50)</label>
-                        </div>
-                    </div>
-                </div> -->
+                </div>
 
-                <!-- Show included items in the combo
+                <!-- Garlic Bread Options -->
                 <div class="mb-4 mt-5">
-                    <h5 class="fw-bold mb-3">Included With Your Combo</h5>
-                    <div class="row g-2">
-                        2 Pizzas with toppings
-                        <div class="col-md-4 col-sm-6">
-                            <div class="card border-0 shadow-sm mb-2">
-                                <div class="card-body py-2 px-3">
-                                    <div class="d-flex align-items-center">
-                                        <i class="bi bi-check-circle-fill text-success me-2"></i>
-                                        <span>2 Pizzas with Cheese + 3 Toppings each</span>
-                                    </div>
-                                </div>
-                            </div>
+                    <h5 class="fw-bold mb-3">Garlic Bread</h5>
+                    
+                    <div class="form-check form-check-inline">
+                        <input class="form-check-input" type="radio" name="garlic_bread" id="garlic-bread-no" value="no" checked>
+                        <label class="form-check-label" for="garlic-bread-no">No</label>
+                    </div>
+                    <div class="form-check form-check-inline">
+                        <input class="form-check-input" type="radio" name="garlic_bread" id="garlic-bread-yes" value="yes" style="background-color: #28a745; border-color: #28a745;">
+                        <label class="form-check-label" for="garlic-bread-yes" style="color: #28a745; font-weight: bold;">Yes (Free)</label>
+                    </div>
+                    
+                    <div id="garlic-bread-options" class="mt-3 d-none">
+                        <div class="form-check form-check-inline">
+                            <input class="form-check-input" type="radio" name="garlic_bread_add_cheese" id="garlic-bread-no-cheese" value="no" checked>
+                            <label class="form-check-label" for="garlic-bread-no-cheese">Regular</label>
                         </div>
-                        
-                        <!-- Wings
-                        <div class="col-md-4 col-sm-6">
-                            <div class="card border-0 shadow-sm mb-2">
-                                <div class="card-body py-2 px-3">
-                                    <div class="d-flex align-items-center">
-                                        <i class="bi bi-check-circle-fill text-success me-2"></i>
-                                        <span>
-                                            @if(strpos($product->name, 'Two Medium Pizzas Combo') !== false)
-                                                2 lb Chicken Wings
-                                            @else
-                                                3 lb Chicken Wings
-                                            @endif
-                                        </span>
-                                    </div>
-                                </div>
-                            </div>
-                        </div> -->
-                        
-                        <!-- 4 Pops
-                        <div class="col-md-4 col-sm-6">
-                            <div class="card border-0 shadow-sm mb-2">
-                                <div class="card-body py-2 px-3">
-                                    <div class="d-flex align-items-center">
-                                        <i class="bi bi-check-circle-fill text-success me-2"></i>
-                                        <span>4 Pops</span>
-                                    </div>
-                                </div>
-                            </div>
-                        </div> -->
-                        
-                        <!-- Free Garlic Bread -->
-                        <!-- <div class="col-md-4 col-sm-6">
-                            <div class="card border-0 shadow-sm mb-2">
-                                <div class="card-body py-2 px-3">
-                                    <div class="d-flex align-items-center">
-                                        <i class="bi bi-check-circle-fill text-success me-2"></i>
-                                        <span>Free Garlic Bread</span>
-                                    </div>
-                                </div>
-                            </div>
+                        <div class="form-check form-check-inline">
+                            <input class="form-check-input" type="radio" name="garlic_bread_add_cheese" id="garlic-bread-add-cheese" value="yes" style="background-color: #dc3545; border-color: #dc3545;">
+                            <label class="form-check-label" for="garlic-bread-add-cheese" style="color: #dc3545; font-weight: bold;">Add Cheese (+$1.50)</label>
                         </div>
                     </div>
-                </div> -->
+                </div>
 
                 <!-- Special Instructions -->
                 <div class="mb-4 mt-4">
@@ -796,16 +552,7 @@ document.addEventListener('DOMContentLoaded', function() {
     
     // Get topping price by size
     function getToppingPrice(size) {
-        switch(size) {
-            case 'medium':
-                return 1.60;
-            case 'large':
-                return 2.10;
-            case 'xl':
-                return 2.30;
-            default:
-                return 1.60;
-        }
+        return parseFloat(extraToppingPrice);
     }
     
     // First pizza toppings
@@ -892,6 +639,7 @@ document.addEventListener('DOMContentLoaded', function() {
         checkbox.addEventListener('change', function() {
             updateFirstPizzaExtraToppingCount();
             updateTotalPrice();
+            console.log('First pizza extra topping changed, new price:', getToppingPrice(this.dataset.size));
         });
     });
     
@@ -902,7 +650,9 @@ document.addEventListener('DOMContentLoaded', function() {
             if (checkbox.checked) {
                 const countsAs = parseInt(checkbox.dataset.countsAs || 1);
                 totalSelected += countsAs;
-                totalPrice += getToppingPrice(checkbox.dataset.size) * countsAs;
+                const toppingPrice = getToppingPrice(checkbox.dataset.size);
+                totalPrice += toppingPrice * countsAs;
+                console.log('Adding topping price:', toppingPrice, 'for', countsAs, 'toppings, total:', totalPrice);
             }
         });
         
@@ -919,6 +669,7 @@ document.addEventListener('DOMContentLoaded', function() {
         checkbox.addEventListener('change', function() {
             updateSecondPizzaExtraToppingCount();
             updateTotalPrice();
+            console.log('Second pizza extra topping changed, new price:', getToppingPrice(this.dataset.size));
         });
     });
     
@@ -929,7 +680,9 @@ document.addEventListener('DOMContentLoaded', function() {
             if (checkbox.checked) {
                 const countsAs = parseInt(checkbox.dataset.countsAs || 1);
                 totalSelected += countsAs;
-                totalPrice += getToppingPrice(checkbox.dataset.size) * countsAs;
+                const toppingPrice = getToppingPrice(checkbox.dataset.size);
+                totalPrice += toppingPrice * countsAs;
+                console.log('Adding topping price:', toppingPrice, 'for', countsAs, 'toppings, total:', totalPrice);
             }
         });
         
@@ -941,16 +694,61 @@ document.addEventListener('DOMContentLoaded', function() {
     // Add price indicators to the page
     const priceDisplay = document.createElement('div');
     priceDisplay.className = 'alert alert-success mt-4';
+    
+    // Get topping price based on size
+    function getExtraToppingPriceDisplay(size) {
+        switch(size) {
+            case 'medium':
+                return '1.60';
+            case 'large':
+                return '2.10';
+            case 'xl':
+            case 'extra_large':
+                return '2.30';
+            case 'jumbo':
+            case 'slab':
+                return '2.90';
+            default:
+                return '1.60'; // Default to medium if unknown
+        }
+    }
+    
+    // Get current size
+    function getCurrentSize() {
+        const sizeRadios = document.querySelectorAll('input[name="size"]');
+        for (const radio of sizeRadios) {
+            if (radio.checked) {
+                return radio.value;
+            }
+        }
+        return 'medium'; // Default to medium
+    }
+    
+    // Update the initial price display
+    const currentSize = getCurrentSize();
+    const extraToppingPriceValue = getExtraToppingPriceDisplay(currentSize);
+    
     priceDisplay.innerHTML = `
         <h5 class="mb-2">Order Summary</h5>
         <div>Base Price: $<span id="base-price">${basePrice.toFixed(2)}</span></div>
-        <div class="extra-toppings-price">Extra Toppings: $<span id="extra-toppings-price">0.00</span></div>
+        <div class="extra-toppings-price">Extra Toppings ($<span id="extra-topping-price-per-item">${extraToppingPriceValue}</span>/each): $<span id="extra-toppings-price">0.00</span></div>
         <div class="mt-2 fw-bold">Total: $<span id="total-price">${basePrice.toFixed(2)}</span></div>
     `;
     
     // Insert price display before the submit button
     const form = document.querySelector('form');
     form.appendChild(priceDisplay);
+    
+    // Update price per topping when size changes
+    const sizeRadios = document.querySelectorAll('input[name="size"]');
+    sizeRadios.forEach(radio => {
+        radio.addEventListener('change', function() {
+            const size = this.value;
+            const pricePerItem = getExtraToppingPriceDisplay(size);
+            document.getElementById('extra-topping-price-per-item').textContent = pricePerItem;
+            updateTotalPrice();
+        });
+    });
     
     // Total price calculation
     function updateTotalPrice() {
@@ -964,37 +762,48 @@ document.addEventListener('DOMContentLoaded', function() {
         
         // Calculate extra toppings price
         if (document.getElementById('add-first-pizza-toppings-yes').checked) {
-            extraToppingsTotal += updateFirstPizzaExtraToppingCount();
+            const firstPizzaExtraPrice = updateFirstPizzaExtraToppingCount();
+            extraToppingsTotal += firstPizzaExtraPrice;
+            console.log('First pizza extra toppings total:', firstPizzaExtraPrice);
         }
         
         if (document.getElementById('add-second-pizza-toppings-yes').checked) {
-            extraToppingsTotal += updateSecondPizzaExtraToppingCount();
+            const secondPizzaExtraPrice = updateSecondPizzaExtraToppingCount();
+            extraToppingsTotal += secondPizzaExtraPrice;
+            console.log('Second pizza extra toppings total:', secondPizzaExtraPrice);
         }
         
         // Add 3rd pizza price if selected
-        if (document.getElementById('add-third-pizza-yes').checked) {
-            let thirdPizzaPrice = {{ $thirdPizzaPrice ?? 0 }};
-            addOnsTotal += thirdPizzaPrice;
-            
-            // Calculate extra toppings for third pizza
-            if (document.getElementById('add-third-pizza-toppings-yes') && 
-                document.getElementById('add-third-pizza-toppings-yes').checked) {
-                extraToppingsTotal += updateThirdPizzaExtraToppingCount();
+        if (document.getElementById('add-third-pizza-yes')) {
+            if (document.getElementById('add-third-pizza-yes').checked) {
+                let thirdPizzaPrice = {{ $thirdPizzaPrice ?? 0 }};
+                addOnsTotal += thirdPizzaPrice;
+                
+                // Calculate extra toppings for third pizza
+                if (document.getElementById('add-third-pizza-toppings-yes') && 
+                    document.getElementById('add-third-pizza-toppings-yes').checked) {
+                    const thirdPizzaExtraPrice = updateThirdPizzaExtraToppingCount();
+                    extraToppingsTotal += thirdPizzaExtraPrice;
+                    console.log('Third pizza extra toppings total:', thirdPizzaExtraPrice);
+                }
             }
         }
         
         // Add garlic bread cheese price if selected
-        if (document.getElementById('add-garlic-bread-yes').checked && 
-            document.getElementById('add-cheese-yes').checked) {
+        if (document.getElementById('garlic-bread-yes').checked && 
+            document.getElementById('garlic-bread-add-cheese').checked) {
             addOnsTotal += 1.50; // Cheese price
+            console.log('Adding garlic bread cheese price: 1.50');
         }
         
         // Update the displayed prices
         basePriceElement.textContent = basePrice.toFixed(2);
         let totalAddOns = extraToppingsTotal + addOnsTotal;
+        console.log('Total add-ons:', totalAddOns, '(Extra toppings:', extraToppingsTotal, '+ Add-ons:', addOnsTotal, ')');
         extraToppingsPriceElement.textContent = totalAddOns.toFixed(2);
         
         const totalPrice = basePrice + totalAddOns;
+        console.log('Final total price:', totalPrice, '(Base:', basePrice, '+ Add-ons:', totalAddOns, ')');
         totalPriceElement.textContent = totalPrice.toFixed(2);
     }
     
@@ -1011,6 +820,10 @@ document.addEventListener('DOMContentLoaded', function() {
         
         addFirstExtraToppingsNo.addEventListener('click', function() {
             firstPizzaExtraToppingsContainer.classList.add('d-none');
+            // Uncheck all extra toppings when toggling off
+            firstPizzaExtraToppings.forEach(checkbox => {
+                checkbox.checked = false;
+            });
             updateTotalPrice();
         });
     }
@@ -1027,6 +840,10 @@ document.addEventListener('DOMContentLoaded', function() {
         
         addSecondExtraToppingsNo.addEventListener('click', function() {
             secondPizzaExtraToppingsContainer.classList.add('d-none');
+            // Uncheck all extra toppings when toggling off
+            secondPizzaExtraToppings.forEach(checkbox => {
+                checkbox.checked = false;
+            });
             updateTotalPrice();
         });
     }
@@ -1109,7 +926,9 @@ document.addEventListener('DOMContentLoaded', function() {
             if (checkbox.checked) {
                 const countsAs = parseInt(checkbox.dataset.countsAs || 1);
                 totalSelected += countsAs;
-                totalPrice += getToppingPrice(checkbox.dataset.size) * countsAs;
+                const toppingPrice = getToppingPrice(checkbox.dataset.size);
+                totalPrice += toppingPrice * countsAs;
+                console.log('Adding third pizza topping price:', toppingPrice, 'for', countsAs, 'toppings, total:', totalPrice);
             }
         });
         
@@ -1131,31 +950,44 @@ document.addEventListener('DOMContentLoaded', function() {
         
         addThirdExtraToppingsNo.addEventListener('click', function() {
             thirdPizzaExtraToppingsContainer.classList.add('d-none');
+            // Uncheck all extra toppings when toggling off
+            thirdPizzaExtraToppings.forEach(checkbox => {
+                checkbox.checked = false;
+            });
             updateTotalPrice();
         });
     }
     
     // Garlic bread toggle functionality
-    const addGarlicBreadYes = document.getElementById('add-garlic-bread-yes');
-    const addGarlicBreadNo = document.getElementById('add-garlic-bread-no');
-    const garlicBreadCheeseContainer = document.getElementById('garlic-bread-cheese-container');
+    const addGarlicBreadYes = document.getElementById('garlic-bread-yes');
+    const addGarlicBreadNo = document.getElementById('garlic-bread-no');
+    const garlicBreadCheeseContainer = document.getElementById('garlic-bread-options');
     
     if (addGarlicBreadYes && addGarlicBreadNo && garlicBreadCheeseContainer) {
         addGarlicBreadYes.addEventListener('click', function() {
             garlicBreadCheeseContainer.classList.remove('d-none');
+            garlicBreadCheeseContainer.style.display = 'block';
             updateTotalPrice();
         });
         
         addGarlicBreadNo.addEventListener('click', function() {
             garlicBreadCheeseContainer.classList.add('d-none');
+            garlicBreadCheeseContainer.style.display = 'none';
+            
+            // Reset cheese selection to "No cheese" when garlic bread is deselected
+            const garlicBreadNoCheeseOption = document.getElementById('garlic-bread-no-cheese');
+            if (garlicBreadNoCheeseOption) {
+                garlicBreadNoCheeseOption.checked = true;
+            }
+            
             updateTotalPrice();
         });
     }
-    
+
     // Garlic bread cheese toggle functionality
-    const addCheeseYes = document.getElementById('add-cheese-yes');
-    const addCheeseNo = document.getElementById('add-cheese-no');
-    
+    const addCheeseYes = document.getElementById('garlic-bread-add-cheese');
+    const addCheeseNo = document.getElementById('garlic-bread-no-cheese');
+
     if (addCheeseYes && addCheeseNo) {
         addCheeseYes.addEventListener('click', function() {
             updateTotalPrice();

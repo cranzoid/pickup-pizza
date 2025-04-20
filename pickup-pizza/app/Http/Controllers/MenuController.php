@@ -34,19 +34,28 @@ class MenuController extends Controller
                 ->dailySpecials()
                 ->where('day_of_week', 'weekend')
                 ->first();
+                
+            // Load the products for the daily special
+            if ($dailySpecial) {
+                $dailySpecial->load(['products' => function($query) use ($today) {
+                    $query->active()->sorted();
+                    // Filter products based on the current day (only show today's specific product)
+                    $query->where('name', 'like', ucfirst($today) . ' Special%');
+                }, 'products.category']);
+            }
         } else {
-            // Weekday special
+            // Daily special - only show the special for the current day
             $dailySpecial = Category::active()
                 ->dailySpecials()
                 ->where('day_of_week', $today)
                 ->first();
-        }
-        
-        // Load the products for the daily special if it exists
-        if ($dailySpecial) {
-            $dailySpecial->load(['products' => function($query) {
-                $query->active()->sorted();
-            }, 'products.category']);
+                
+            // Load the products for the daily special
+            if ($dailySpecial) {
+                $dailySpecial->load(['products' => function($query) {
+                    $query->active()->sorted();
+                }, 'products.category']);
+            }
         }
         
         // Get popular products
@@ -88,12 +97,12 @@ class MenuController extends Controller
     public function product($category, $product)
     {
         // Find the category
-        $category = Category::where('slug', $category)->where('active', true)->firstOrFail();
+        $category = Category::where('slug', $category)->where('is_active', true)->firstOrFail();
         
         // Find the product
         $product = Product::where('slug', $product)
             ->where('category_id', $category->id)
-            ->where('active', true)
+            ->where('is_active', true)
             ->firstOrFail();
         
         // For debugging purposes
@@ -152,6 +161,12 @@ class MenuController extends Controller
             strpos($product->name, 'Ultimate Pizza & Wings Combo') === false) {
             \Log::info("Using template: menu.Pizza-combo-New for {$product->name} based on category ID");
             return view('menu.Pizza-combo-New', compact('category', 'product', 'toppings', 'firstSize', 'addOns'));
+        }
+        
+        // Use specialty pizza template for specialty pizzas
+        if ($product->is_specialty) {
+            \Log::info("Using specialty pizza template for {$product->name}");
+            return view('menu.specialty-pizza', compact('category', 'product', 'toppings', 'firstSize'));
         }
         
         \Log::info("Using default template: menu.product");

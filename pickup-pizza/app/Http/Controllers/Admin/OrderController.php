@@ -2,7 +2,10 @@
 
 namespace App\Http\Controllers\Admin;
 
+use App\Helpers\EmailHelper;
 use App\Http\Controllers\Controller;
+use App\Mail\AdminNotification;
+use App\Mail\OrderStatusUpdate;
 use App\Models\Order;
 use Illuminate\Http\Request;
 
@@ -40,8 +43,74 @@ class OrderController extends Controller
      */
     public function show(Order $order)
     {
+        // Load order items without any eager loading that might cause issues
         $order->load('items');
-        return view('admin.orders.show', compact('order'));
+        
+        // Decode options for each item
+        foreach ($order->items as $item) {
+            // Ensure options is a string before trying to decode
+            if (is_string($item->options)) {
+                $decodedOptions = json_decode($item->options, true) ?: [];
+                
+                // Process wing flavors if they exist as numerical values
+                if (isset($decodedOptions['wing_flavors']) && is_numeric($decodedOptions['wing_flavors'])) {
+                    $wingFlavors = [
+                        '1' => 'Plain',
+                        '2' => 'Mild',
+                        '3' => 'Medium',
+                        '4' => 'Hot',
+                        '5' => 'Suicide',
+                        '6' => 'Honey Garlic',
+                        '7' => 'BBQ',
+                        '8' => 'Sweet & Sour',
+                        '9' => 'Honey Hot',
+                        '10' => 'Dry Cajun'
+                    ];
+                    
+                    $flavorId = $decodedOptions['wing_flavors'];
+                    if (isset($wingFlavors[$flavorId])) {
+                        $decodedOptions['wing_flavors'] = $wingFlavors[$flavorId];
+                    }
+                }
+                
+                // Also process wings_flavor for compatibility
+                if (isset($decodedOptions['wings_flavor']) && is_numeric($decodedOptions['wings_flavor'])) {
+                    $wingFlavors = [
+                        '1' => 'Plain',
+                        '2' => 'Mild',
+                        '3' => 'Medium',
+                        '4' => 'Hot',
+                        '5' => 'Suicide',
+                        '6' => 'Honey Garlic',
+                        '7' => 'BBQ',
+                        '8' => 'Sweet & Sour',
+                        '9' => 'Honey Hot',
+                        '10' => 'Dry Cajun'
+                    ];
+                    
+                    $flavorId = $decodedOptions['wings_flavor'];
+                    if (isset($wingFlavors[$flavorId])) {
+                        $decodedOptions['wings_flavor'] = $wingFlavors[$flavorId];
+                    }
+                }
+                
+                // Store the entire decoded options array to the item
+                $item->decoded_options = $decodedOptions;
+            } else {
+                $item->decoded_options = [];
+            }
+        }
+
+        // Order statuses for the dropdown
+        $statuses = [
+            'pending' => 'Pending',
+            'preparing' => 'Preparing',
+            'ready' => 'Ready for Pickup',
+            'completed' => 'Completed',
+            'cancelled' => 'Cancelled'
+        ];
+
+        return view('admin.orders.show', compact('order', 'statuses'));
     }
 
     /**
@@ -59,7 +128,13 @@ class OrderController extends Controller
         
         // Send status update email for significant status changes
         if ($previousStatus != $request->status && in_array($request->status, ['preparing', 'ready', 'cancelled'])) {
-            \Mail::to($order->customer_email)->send(new \App\Mail\OrderStatusUpdate($order));
+            // Send to customer
+            \Mail::to($order->customer_email)->send(new OrderStatusUpdate($order));
+            
+            // Also send to admins if status is preparing or ready
+            if (in_array($request->status, ['preparing', 'ready'])) {
+                EmailHelper::sendToAdmins(new OrderStatusUpdate($order));
+            }
         }
         
         return redirect()->route('admin.orders.show', $order)
@@ -195,10 +270,8 @@ class OrderController extends Controller
      */
     public function sendPaymentFailureNotification(Order $order, $errorMessage)
     {
-        // Get admin email from settings or use a default
-        $adminEmail = config('mail.admin_email', 'admin@pisapizza.ca');
-        
-        \Mail::to($adminEmail)->send(new \App\Mail\AdminNotification(
+        // Send to admin emails
+        EmailHelper::sendToAdmins(new AdminNotification(
             'Payment Processing Failed',
             'There was an issue processing payment for an order.',
             'error',
@@ -210,5 +283,59 @@ class OrderController extends Controller
         
         return redirect()->route('admin.orders.show', $order)
             ->with('error', 'Payment processing failed. Admin has been notified.');
+    }
+
+    /**
+     * Debug method to display order options in raw format
+     */
+    public function debug(Order $order)
+    {
+        // Load order items without eager loading
+        $order->load('items');
+        
+        // Add debug info to each item
+        foreach ($order->items as $item) {
+            // Store raw options
+            $item->raw_options = $item->options;
+            
+            // Decode options as an array
+            if (is_string($item->options)) {
+                try {
+                    // Use a temporary variable instead of directly modifying the property
+                    $decodedOptions = json_decode($item->options, true) ?: [];
+                    
+                    // Process wing flavors if they exist as numerical values
+                    if (isset($decodedOptions['wing_flavors']) && is_numeric($decodedOptions['wing_flavors'])) {
+                        $wingFlavors = [
+                            '1' => 'Plain',
+                            '2' => 'Mild',
+                            '3' => 'Medium',
+                            '4' => 'Hot',
+                            '5' => 'Suicide',
+                            '6' => 'Honey Garlic',
+                            '7' => 'BBQ',
+                            '8' => 'Sweet & Sour',
+                            '9' => 'Honey Hot',
+                            '10' => 'Dry Cajun'
+                        ];
+                        
+                        $flavorId = $decodedOptions['wing_flavors'];
+                        if (isset($wingFlavors[$flavorId])) {
+                            $decodedOptions['wing_flavors'] = $wingFlavors[$flavorId];
+                        }
+                    }
+                    
+                    // Assign the processed options to the item
+                    $item->decoded_options = $decodedOptions;
+                } catch (\Exception $e) {
+                    // Create a new array rather than modifying the property
+                    $item->decoded_options = ['error' => 'Failed to decode JSON: ' . $e->getMessage()];
+                }
+            } else {
+                $item->decoded_options = ['error' => 'Options not stored as a string'];
+            }
+        }
+
+        return view('admin.debug.order_options', compact('order'));
     }
 } 

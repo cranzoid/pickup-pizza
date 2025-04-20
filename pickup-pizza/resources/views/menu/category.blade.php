@@ -24,6 +24,12 @@
             </div>
         </div>
         
+        @if(session('info'))
+            <div class="alert alert-info animate__animated animate__fadeIn mb-4">
+                {{ session('info') }}
+            </div>
+        @endif
+        
         @if($products->count() > 0)
             <div class="row g-4">
                 @foreach($products as $product)
@@ -63,7 +69,30 @@
                                             , 2) }}</span>
                                         </div>
                                         
-                                        @if($product->is_pizza || $product->has_toppings)
+                                        @if($product->is_specialty)
+                                            <!-- Specialty Pizza Direct Size Selection -->
+                                            <div class="mb-3">
+                                                <p class="small text-muted mb-2">All specialty pizzas include 2 pizzas (2-for-1 pricing)</p>
+                                                <form action="{{ route('cart.add') }}" method="POST">
+                                                    @csrf
+                                                    <input type="hidden" name="product_id" value="{{ $product->id }}">
+                                                    <input type="hidden" name="quantity" value="1">
+                                                    <div class="d-flex flex-column gap-2">
+                                                        @php
+                                                            $sizes = is_array($product->sizes) ? $product->sizes : json_decode($product->sizes, true);
+                                                        @endphp
+                                                        @if(is_array($sizes))
+                                                            @foreach($sizes as $size => $price)
+                                                                <button type="submit" name="size" value="{{ $size }}" class="btn btn-outline-primary d-flex justify-content-between align-items-center">
+                                                                    <span>2 {{ ucfirst($size) }}</span>
+                                                                    <span>${{ number_format(is_array($price) ? $price['price'] : $price, 2) }}</span>
+                                                                </button>
+                                                            @endforeach
+                                                        @endif
+                                                    </div>
+                                                </form>
+                                            </div>
+                                        @elseif($product->is_pizza || $product->has_toppings)
                                             <a href="{{ route('menu.product', [$category->slug, $product->slug]) }}" class="btn btn-primary w-100">Customize</a>
                                         @else
                                             <form action="{{ route('cart.add') }}" method="POST">

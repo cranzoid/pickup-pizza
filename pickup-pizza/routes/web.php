@@ -99,6 +99,9 @@ Route::prefix('admin')->middleware(['auth.basic'])->name('admin.')->group(functi
     Route::resource('extras', ProductExtraController::class);
     Route::post('extras/bulk-toggle-active', [ProductExtraController::class, 'bulkToggleActive'])->name('extras.bulk-toggle-active');
     Route::get('extras/by-category', [ProductExtraController::class, 'getByCategory'])->name('extras.by-category');
+
+    // Order routes
+    Route::get('orders/{order}/debug', [OrderController::class, 'debug'])->name('orders.debug');
 });
 
 // Debug route to display combo products

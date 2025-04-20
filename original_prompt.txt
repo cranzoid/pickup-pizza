@@ -1,0 +1,223 @@
+Project Title:
+PISA Pizza Pickup App – A Laravel-based Pickup-Only Pizza Ordering Platform
+
+🧭 Overview
+Purpose:
+Build a standalone Laravel application hosted on pickup.pisapizza.ca to handle pickup-only pizza orders, allowing users to browse a dynamic menu, customize items like pizzas and combos, and place orders via guest checkout. Payments are either online (via Stripe) or paid on pickup.
+
+Platform Stack:
+
+Laravel (latest) + PHP (latest stable)
+
+MySQL (Make it production ready)
+
+Stripe for payments
+
+Mailgun for transactional emaials
+
+Tailwind or Bootstrap for responsive UI (flexible)
+
+👤 Customer Flow (Frontend)
+No login/account system – guest checkout only
+
+Customer browses menu
+
+Can select and customize items (e.g., pizzas, combos)
+
+Upsells offered in cart (e.g., wings, garlic bread, drinks)
+
+At checkout, customer provides:
+
+Name
+
+Phone
+
+Pickup Date & Time (via timepicker)
+
+Payment method: Stripe or Pay on Pickup
+
+Order summary + tax + discount (if enabled) calculated
+
+Order placed → Confirmation email sent to customer and admin
+
+🛒 Admin Panel (Backend)
+Roles: Only admin access — no user management
+Capabilities:
+
+Add/edit/delete:
+
+Categories (with custom names, e.g., "Specialty Pizza", "Daily Deals")
+
+Products with full options (sizes, toppings, pricing)
+
+Combos with dynamic pizza logic and upsells
+
+Set topping limits and per-size extra topping prices
+
+Manage tax settings (turn on/off, set %)
+
+Manage discount codes (turn on/off, set value/type)
+
+View & update order statuses: "Pending", "Preparing", "Ready", "Picked Up"
+
+View reports:
+
+Daily/weekly/monthly sales
+
+Popular items
+
+Payment type breakdown
+
+Order volume over time
+
+📦 Menu & Item Logic
+🍕 Pizzas
+Customizable Topping Types:
+
+Meats (e.g., Pepperoni, Sausage, Real Chicken = 2 toppings)
+
+Veggies
+
+Cheeses
+
+Topping Limit enforced by product (e.g., 3 toppings max)
+
+Extra toppings automatically charge per size:
+
+Medium: $1.60, Large: $2.10, XL: $2.30, Jumbo: $2.99
+
+No modal for extras – price increases inline automatically
+
+Specialty Pizzas: predefined toppings (read-only), no customization
+
+🍕 Combos
+Admin-configurable combos:
+
+2 Medium/Large/XL pizzas + wings + pop, etc.
+
+Each pizza in combo allows separate topping selection
+
+Radio prompt for "Add 3rd Pizza?" → shows topping input and adds cost
+
+Auto-updates pricing with extras (like adding pop or garlic bread)
+
+🔥 Pickup Specials
+E.g., 1 XL Pizza (1 topping), 2 Large (6 combined toppings), etc.
+
+User selects exact number of toppings
+
+System enforces topping logic & charges for extras
+
+🐔 Wings & Add-Ons
+Jumbo wings with rub/sauce options, size selection
+
+Garlic bread with optional cheese (+$1.50)
+
+Pop (2L or 4-pack)
+
+🛍️ Upsells
+Upsells appear after item is added or in cart:
+
+e.g., “Add 1 lb wings for $10.49?” or “Add 4 pops for $4.99?”
+
+💸 Checkout & Payment
+Stripe integration with secure checkout
+
+Option for Pay on Pickup
+
+Guest-only checkout
+
+Cart summary includes:
+
+Item list, tax (if enabled), discount (if applied), total
+
+Option to enter discount code (if available)
+
+Confirmation emails (via Mailgun) sent to:
+
+Customer: full order summary + pickup time
+
+Admin: detailed order info for kitchen
+
+⚙️ Business Settings (Admin-Controlled)
+Tax Settings
+
+Turn tax ON/OFF
+
+Set global tax % (applied at checkout)
+
+Discount Codes
+
+Turn discounts ON/OFF
+
+Add/edit codes with:
+
+Flat ($) or % discount
+
+Expiry date, usage limit
+
+Daily Specials / Walk-in Deals
+
+Admin-defined category with day-specific offers
+
+No hardcoded logic — fully dynamic, with optional day labels
+
+📈 Reporting
+Sales reports (filter by day/week/month)
+
+Order reports (volume, time slots, peak hours)
+
+Top-selling items
+
+Most-used combos
+
+Export to CSV/Excel (optional)
+
+📐 Design Guidelines
+Responsive UI for mobile/tablet/desktop
+
+Clean layout inspired by modern food ordering UIs (e.g., Mojo Pizza)
+
+Sidebar navigation with categories
+
+Admin panel can be Bootstrap-based or Tailwind-based — dev’s choice
+
+Consistent, accessible forms and cart interface
+
+✅ Extra Features
+Business hours stored in backend (no restriction logic needed, display only)
+
+Optional free items (e.g., garlic bread with wings) auto-included
+
+Environment variables for:
+
+Stripe secret/public keys
+
+Mailgun API & domain
+
+Seeders for:
+
+Categories, example pizzas, toppings, sample orders
+
+
+❌ Not Required
+No login/registration
+
+No loyalty system (yet)
+
+No delivery logic
+
+No user-specific order history
+
+💡 Key Rules Recap
+Topping limits + Real Chicken = 2
+
+Extra toppings = auto-charged by size
+
+Upsells = shown in cart
+
+Orders = guest-only, email confirmation
+
+Admin = full product/category/price control
+
+Tax & discounts = togglable in backend

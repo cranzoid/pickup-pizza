@@ -81,9 +81,9 @@
             <div class="order-details">
                 <p><strong>Order Number:</strong> {{ $order->order_number }}</p>
                 <p><strong>Order Date:</strong> {{ $order->created_at->format('F j, Y, g:i a') }}</p>
-                <p><strong>Customer:</strong> {{ $order->name }}</p>
-                <p><strong>Phone:</strong> {{ $order->phone }}</p>
-                <p><strong>Email:</strong> {{ $order->email }}</p>
+                <p><strong>Customer:</strong> {{ $order->customer_name }}</p>
+                <p><strong>Phone:</strong> {{ $order->customer_phone }}</p>
+                <p><strong>Email:</strong> {{ $order->customer_email }}</p>
                 <p><strong>Pickup Date:</strong> {{ date('F j, Y', strtotime($order->pickup_date)) }}</p>
                 <p><strong>Pickup Time:</strong> {{ date('g:i a', strtotime($order->pickup_time)) }}</p>
                 <p><strong>Payment Method:</strong> {{ $order->payment_method === 'credit_card' ? 'Credit Card (Paid)' : 'Pay in Store' }}</p>
@@ -102,7 +102,7 @@
                     </tr>
                 </thead>
                 <tbody>
-                    @foreach($order->orderItems as $item)
+                    @foreach($order->items as $item)
                         @php
                             $options = json_decode($item->options, true);
                         @endphp

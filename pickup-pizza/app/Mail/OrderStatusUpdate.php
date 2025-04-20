@@ -29,7 +29,7 @@ class OrderStatusUpdate extends Mailable
      */
     public function envelope(): Envelope
     {
-        $statusText = ucfirst(str_replace('_', ' ', $this->order->status));
+        $statusText = ucfirst(str_replace('_', ' ', $this->order->order_status));
         
         return new Envelope(
             subject: "Your PISA Pizza Order is {$statusText} - Order #{$this->order->order_number}",

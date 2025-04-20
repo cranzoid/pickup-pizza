@@ -26,7 +26,7 @@ class ProductController extends Controller
         }
         
         if ($request->filled('status')) {
-            $query->where('active', $request->status === 'active');
+            $query->where('is_active', $request->status === 'active');
         }
         
         if ($request->filled('search')) {
@@ -60,6 +60,9 @@ class ProductController extends Controller
      */
     public function store(Request $request)
     {
+        // Get validation rules based on if it's a specialty pizza
+        $isSpecialty = $request->has('is_specialty');
+        
         // Validate the request
         $validated = $request->validate([
             'name' => 'required|string|max:255|unique:products',
@@ -73,8 +76,8 @@ class ProductController extends Controller
             'sizes.*.price' => 'nullable|numeric|min:0',
             'sizes.*.description' => 'nullable|string|max:255',
             'has_toppings' => 'nullable|boolean',
-            'max_toppings' => 'nullable|integer|min:0',
-            'free_toppings' => 'nullable|integer|min:0',
+            'max_toppings' => $isSpecialty ? 'nullable|integer|min:0' : 'required_if:has_toppings,1|nullable|integer|min:0',
+            'free_toppings' => $isSpecialty ? 'nullable|integer|min:0' : 'required_if:has_toppings,1|nullable|integer|min:0',
             'has_extras' => 'nullable|boolean',
             'image' => 'nullable|image|mimes:jpeg,png,jpg,gif|max:2048',
             'is_active' => 'nullable|boolean',
@@ -88,7 +91,7 @@ class ProductController extends Controller
         $product->description = $validated['description'] ?? null;
         $product->category_id = $validated['category_id'];
         $product->sort_order = $validated['display_order'] ?? 0;
-        $product->active = $request->has('is_active');
+        $product->is_active = $request->has('is_active');
         
         // Handle sizes
         $product->has_size_options = $request->has('has_sizes');
@@ -111,9 +114,18 @@ class ProductController extends Controller
         
         // Handle topping options
         $product->has_toppings = $request->has('has_toppings');
+        $product->is_specialty = $request->has('is_specialty');
+        
         if ($product->has_toppings) {
-            $product->max_toppings = $validated['max_toppings'] ?? 0;
-            $product->free_toppings = $validated['free_toppings'] ?? 0;
+            // For specialty pizzas, don't require setting max_toppings
+            if ($product->is_specialty) {
+                // Specialty pizzas don't need max_toppings validation
+                $product->max_toppings = $validated['max_toppings'] ?? 0;
+                $product->free_toppings = $validated['free_toppings'] ?? 0;
+            } else {
+                $product->max_toppings = $validated['max_toppings'] ?? 0;
+                $product->free_toppings = $validated['free_toppings'] ?? 0;
+            }
         }
         
         // Handle extras options
@@ -147,6 +159,9 @@ class ProductController extends Controller
      */
     public function update(Request $request, Product $product)
     {
+        // Get validation rules based on if it's a specialty pizza
+        $isSpecialty = $request->has('is_specialty') || $product->is_specialty;
+        
         // Validate the request
         $validated = $request->validate([
             'name' => ['required', 'string', 'max:255', Rule::unique('products')->ignore($product->id)],
@@ -160,8 +175,8 @@ class ProductController extends Controller
             'sizes.*.price' => 'nullable|numeric|min:0',
             'sizes.*.description' => 'nullable|string|max:255',
             'has_toppings' => 'nullable|boolean',
-            'max_toppings' => 'nullable|integer|min:0',
-            'free_toppings' => 'nullable|integer|min:0',
+            'max_toppings' => $isSpecialty ? 'nullable|integer|min:0' : 'required_if:has_toppings,1|nullable|integer|min:0',
+            'free_toppings' => $isSpecialty ? 'nullable|integer|min:0' : 'required_if:has_toppings,1|nullable|integer|min:0',
             'has_extras' => 'nullable|boolean',
             'image' => 'nullable|image|mimes:jpeg,png,jpg,gif|max:2048',
             'is_active' => 'nullable|boolean',
@@ -179,7 +194,7 @@ class ProductController extends Controller
         $product->description = $validated['description'] ?? null;
         $product->category_id = $validated['category_id'];
         $product->sort_order = $validated['display_order'] ?? 0;
-        $product->active = $request->has('is_active');
+        $product->is_active = $request->has('is_active');
         
         // Handle sizes
         $product->has_size_options = $request->has('has_sizes');
@@ -203,9 +218,18 @@ class ProductController extends Controller
         
         // Handle topping options
         $product->has_toppings = $request->has('has_toppings');
+        $product->is_specialty = $request->has('is_specialty');
+        
         if ($product->has_toppings) {
-            $product->max_toppings = $validated['max_toppings'] ?? 0;
-            $product->free_toppings = $validated['free_toppings'] ?? 0;
+            // For specialty pizzas, don't require setting max_toppings
+            if ($product->is_specialty) {
+                // Specialty pizzas don't need max_toppings validation
+                $product->max_toppings = $validated['max_toppings'] ?? 0;
+                $product->free_toppings = $validated['free_toppings'] ?? 0;
+            } else {
+                $product->max_toppings = $validated['max_toppings'] ?? 0;
+                $product->free_toppings = $validated['free_toppings'] ?? 0;
+            }
         } else {
             $product->max_toppings = null;
             $product->free_toppings = null;

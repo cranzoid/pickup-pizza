@@ -28,17 +28,25 @@ class HomeController extends Controller
                 ->dailySpecials()
                 ->where('day_of_week', 'weekend')
                 ->first();
+            
+            // Load the products for the daily special
+            if ($dailySpecial) {
+                $dailySpecial->load(['products' => function($query) use ($today) {
+                    // Filter products based on the current day (only show today's specific product)
+                    $query->where('name', 'like', ucfirst($today) . ' Special%');
+                }, 'products.category']);
+            }
         } else {
-            // Weekday special
+            // Weekday special - only show the special for the current day
             $dailySpecial = Category::active()
                 ->dailySpecials()
                 ->where('day_of_week', $today)
                 ->first();
-        }
-        
-        // Load the products for the daily special if it exists
-        if ($dailySpecial) {
-            $dailySpecial->load('products.category');
+                
+            // Load the products for the daily special
+            if ($dailySpecial) {
+                $dailySpecial->load('products.category');
+            }
         }
         
         return view('home.index', compact('categories', 'dailySpecial'));

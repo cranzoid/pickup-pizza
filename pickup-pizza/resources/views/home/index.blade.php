@@ -8,13 +8,13 @@
         <div class="container-fluid px-0">
             <div class="position-relative">
                 <div class="overlay-dark position-absolute w-100 h-100" style="background: linear-gradient(rgba(0,0,0,0.7), rgba(0,0,0,0.5));"></div>
-                <img src="https://images.unsplash.com/photo-1513104890138-7c749659a591?ixlib=rb-4.0.3&ixid=MnwxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8&auto=format&fit=crop&w=2000&q=80" class="w-100" style="max-height: 600px; object-fit: cover;" alt="Pizza Hero Image">
+                <img src="{{ asset('images/pizza-hero.webp') }}" class="w-100" style="max-height: 1000px; object-fit: cover;" alt="Pizza Hero Image">
                 <div class="position-absolute top-50 start-50 translate-middle text-center text-white w-100" style="max-width: 800px;">
                     <h1 class="display-3 fw-bold mb-4 animate__animated animate__fadeInDown">
-                        Delicious Pizza For<br>
-                        <span class="text-danger">Pickup Only</span>
+                        Hamilton's Favorite<br>
+                        <span class="text-danger">Pizza and Wings</span>
                     </h1>
-                    <p class="lead mb-4 px-4 animate__animated animate__fadeInUp animate__delay-1s">Order online and pick up fresh, hot pizza made with premium ingredients at our convenient location.</p>
+                    <p class="lead mb-4 px-4 animate__animated animate__fadeInUp animate__delay-1s">Order online and pick up fresh, hot pizza made with premium ingredients at our store.</p>
                     <div class="d-flex flex-wrap gap-3 justify-content-center animate__animated animate__fadeInUp animate__delay-2s">
                         <a href="{{ route('menu.index') }}" class="btn btn-primary btn-lg">Order Now</a>
                         <a href="#daily-specials" class="btn btn-outline-light btn-lg">Today's Specials</a>

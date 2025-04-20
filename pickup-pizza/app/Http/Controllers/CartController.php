@@ -51,16 +51,94 @@ class CartController extends Controller
             'add_extra_toppings' => 'nullable|in:yes,no',
             'extra_toppings' => 'nullable|array',
             'extra_toppings.*' => 'exists:toppings,id',
+            // Combo-specific options
+            'wing_flavors' => 'nullable|string',
+            'add_second_pizza' => 'nullable|in:yes,no',
+            'add_extra_wings' => 'nullable|in:yes,no',
+            'extra_wings_quantity' => 'nullable|integer|min:1|max:10',
+            'add_pop' => 'nullable|in:yes,no',
+            'pop1' => 'nullable|string',
+            'pop2' => 'nullable|string',
+            'pop3' => 'nullable|string',
+            'pop4' => 'nullable|string',
+            'garlic_bread' => 'nullable|in:yes,no',
+            'garlic_bread_add_cheese' => 'nullable|in:yes,no',
+            'third_pizza' => 'nullable|in:yes,no',
+            // Pizza options
+            'pizza_1_toppings' => 'nullable|array',
+            'pizza_2_toppings' => 'nullable|array',
+            'pizza_3_toppings' => 'nullable|array',
+        ]);
+        
+        // Log the request for debugging
+        \Log::info('Cart Add Request', [
+            'request' => $request->all(),
         ]);
         
         // Get the product
         $product = Product::findOrFail($request->product_id);
         
+        // For specialty pizzas with direct size selection, skip to adding directly to cart
+        if ($product->is_specialty && $request->has('size') && !$request->has('toppings')) {
+            // Get price based on size
+            $sizes = is_array($product->sizes) ? $product->sizes : json_decode($product->sizes, true);
+            $size = $request->size;
+            $price = is_array($sizes[$size]) ? $sizes[$size]['price'] : $sizes[$size];
+            
+            // Get the default toppings for display only
+            $defaultToppings = $product->defaultToppings()->get();
+            $toppingNames = $defaultToppings->pluck('name')->toArray();
+            
+            // Create cart item for specialty pizza (2-for-1)
+            $item = [
+                'id' => $product->id,
+                'type' => 'product',
+                'name' => $product->name . ' (2-for-1)',
+                'size' => $size,
+                'quantity' => (int) $request->quantity,
+                'unit_price' => $price,
+                'options' => [
+                    'toppings' => $toppingNames,
+                    'is_specialty' => true,
+                    'is_two_for_one' => true
+                ],
+                'notes' => $request->notes ?? 'Two ' . ucfirst($size) . ' ' . $product->name . ' pizzas',
+                'image' => $product->image_path,
+            ];
+            
+            // Get existing cart items
+            $cart = session()->get('cart', []);
+            
+            // Add item to cart with a unique key
+            $itemKey = 'product_' . $product->id . '_' . $size . '_' . uniqid();
+            $cart[$itemKey] = $item;
+            
+            // Save the cart in session
+            session()->put('cart', $cart);
+            
+            // Check if any suggested upsell is available
+            $upsell = $this->getUpsellForProduct($product);
+            if ($upsell) {
+                session()->flash('upsell', $upsell);
+            }
+            
+            return redirect()->route('cart.index')->with('success', 'Product added to cart!');
+        }
+        
         // Get product price based on size if it has size options
         $price = $product->price;
         if ($product->has_size_options && $request->has('size')) {
             $sizes = is_array($product->sizes) ? $product->sizes : json_decode($product->sizes, true);
-            $price = $sizes[$request->size] ?? $product->price;
+            
+            // Make sure we get a numeric price value
+            if (isset($sizes[$request->size])) {
+                // Handle cases where size might have price as an array or as a direct value
+                if (is_array($sizes[$request->size]) && isset($sizes[$request->size]['price'])) {
+                    $price = floatval($sizes[$request->size]['price']);
+                } else {
+                    $price = floatval($sizes[$request->size]);
+                }
+            }
         }
         
         // Handle toppings if any
@@ -85,7 +163,18 @@ class CartController extends Controller
                 }
                 
                 // Add toppings price to product price
-                $price += $toppingPrice;
+                if (is_numeric($price) && is_numeric($toppingPrice)) {
+                    $price += $toppingPrice;
+                } else {
+                    // Handle error case - log it and use a fallback price
+                    \Log::error("Type error in price calculation: price={$price}, toppingPrice={$toppingPrice}");
+                    if (!is_numeric($price)) {
+                        $price = floatval($product->price);
+                    }
+                    if (is_numeric($toppingPrice)) {
+                        $price += $toppingPrice;
+                    }
+                }
             } else {
                 // For specialty pizzas, just collect the topping names
                 foreach ($toppings as $topping) {
@@ -96,6 +185,98 @@ class CartController extends Controller
             $options['toppings'] = $toppingNames;
         }
         
+        // Directly store pizza toppings for combos if present
+        if ($request->has('first_pizza_toppings') && is_array($request->first_pizza_toppings) && count($request->first_pizza_toppings) > 0) {
+            $toppings = Topping::whereIn('id', $request->first_pizza_toppings)->get();
+            $toppingNames = [];
+            
+            foreach ($toppings as $topping) {
+                $toppingNames[] = $topping->name;
+            }
+            
+            $options['first_pizza_toppings'] = $toppingNames;
+        }
+        
+        if ($request->has('second_pizza_toppings') && is_array($request->second_pizza_toppings) && count($request->second_pizza_toppings) > 0) {
+            $toppings = Topping::whereIn('id', $request->second_pizza_toppings)->get();
+            $toppingNames = [];
+            
+            foreach ($toppings as $topping) {
+                $toppingNames[] = $topping->name;
+            }
+            
+            $options['second_pizza_toppings'] = $toppingNames;
+        }
+        
+        // Store extra toppings for each pizza
+        if ($request->has('first_pizza_extra_toppings') && is_array($request->first_pizza_extra_toppings) && count($request->first_pizza_extra_toppings) > 0) {
+            $toppings = Topping::whereIn('id', $request->first_pizza_extra_toppings)->get();
+            $toppingNames = [];
+            
+            foreach ($toppings as $topping) {
+                $toppingNames[] = $topping->name;
+            }
+            
+            $options['first_pizza_extra_toppings'] = $toppingNames;
+        }
+        
+        if ($request->has('second_pizza_extra_toppings') && is_array($request->second_pizza_extra_toppings) && count($request->second_pizza_extra_toppings) > 0) {
+            $toppings = Topping::whereIn('id', $request->second_pizza_extra_toppings)->get();
+            $toppingNames = [];
+            
+            foreach ($toppings as $topping) {
+                $toppingNames[] = $topping->name;
+            }
+            
+            $options['second_pizza_extra_toppings'] = $toppingNames;
+        }
+        
+        // Add combo-specific options if they exist in the request
+        if ($request->filled('wing_flavors')) {
+            $options['wing_flavors'] = $request->wing_flavors;
+        }
+        if ($request->filled('add_pop') && $request->add_pop === 'yes') {
+            $options['add_pop'] = 'yes';
+            if ($request->filled('pop1')) $options['pop1'] = $request->pop1;
+            if ($request->filled('pop2')) $options['pop2'] = $request->pop2;
+            if ($request->filled('pop3')) $options['pop3'] = $request->pop3;
+            if ($request->filled('pop4')) $options['pop4'] = $request->pop4;
+        }
+        if ($request->filled('garlic_bread') && $request->garlic_bread === 'yes') {
+            $options['garlic_bread'] = 'yes';
+            if ($request->filled('garlic_bread_add_cheese') && $request->garlic_bread_add_cheese === 'yes') {
+                $options['garlic_bread_add_cheese'] = 'yes';
+            }
+        }
+        if ($request->filled('third_pizza') && $request->third_pizza === 'yes') {
+            $options['third_pizza'] = 'yes';
+             // Store third pizza toppings if present
+            if ($request->has('pizza_3_toppings') && is_array($request->pizza_3_toppings) && count($request->pizza_3_toppings) > 0) {
+                $toppings = Topping::whereIn('id', $request->pizza_3_toppings)->get();
+                $toppingNames = [];
+                foreach ($toppings as $topping) {
+                    $toppingNames[] = $topping->name;
+                }
+                $options['pizza_3_toppings'] = $toppingNames;
+            }
+            // Store extra toppings for third pizza
+            if ($request->has('third_pizza_extra_toppings') && is_array($request->third_pizza_extra_toppings) && count($request->third_pizza_extra_toppings) > 0) {
+                $toppings = Topping::whereIn('id', $request->third_pizza_extra_toppings)->get();
+                $toppingNames = [];
+                foreach ($toppings as $topping) {
+                    $toppingNames[] = $topping->name;
+                }
+                $options['third_pizza_extra_toppings'] = $toppingNames;
+            }
+        }
+        if ($request->filled('add_extra_wings') && $request->add_extra_wings === 'yes') {
+             $options['add_extra_wings'] = 'yes';
+             if ($request->filled('extra_wings_quantity')) {
+                 $options['extra_wings_quantity'] = (int) $request->extra_wings_quantity;
+             }
+        }
+
+
         // Handle extra toppings for specialty pizzas
         if ($request->has('add_extra_toppings') && $request->add_extra_toppings === 'yes' && 
             $request->has('extra_toppings') && is_array($request->extra_toppings) && 
@@ -230,6 +411,121 @@ class CartController extends Controller
                 $options['extras'] = $extras;
                 // Add extras price to the product price
                 $price += $extraPrice;
+            }
+        }
+        
+        // Handle wing flavors for combo products
+        if ($request->has('wing_flavors')) {
+            $wingFlavors = [
+                '1' => 'Plain',
+                '2' => 'Mild',
+                '3' => 'Medium',
+                '4' => 'Hot',
+                '5' => 'Suicide',
+                '6' => 'Honey Garlic',
+                '7' => 'BBQ',
+                '8' => 'Sweet & Sour',
+                '9' => 'Honey Hot',
+                '10' => 'Dry Cajun'
+            ];
+            
+            $options['wing_flavors'] = $wingFlavors[$request->wing_flavors] ?? 'Plain';
+        }
+        
+        // Handle extra wings for combos
+        if ($request->has('add_extra_wings') && $request->add_extra_wings === 'yes') {
+            $options['add_extra_wings'] = 'yes';
+            
+            if ($request->has('extra_wings_quantity')) {
+                $extraWingsQty = (int) $request->extra_wings_quantity;
+                if ($extraWingsQty > 0) {
+                    $options['extra_wings_quantity'] = $extraWingsQty;
+                    
+                    // Add extra wings price - assume $10.49 per unit
+                    $extraWingsPrice = 10.49 * $extraWingsQty;
+                    if (is_numeric($price)) {
+                        $price += $extraWingsPrice;
+                    }
+                }
+            }
+        }
+        
+        // Handle garlic bread options
+        if ($request->has('garlic_bread') && $request->garlic_bread === 'yes') {
+            $options['garlic_bread'] = 'yes';
+            
+            if ($request->has('garlic_bread_add_cheese') && $request->garlic_bread_add_cheese === 'yes') {
+                $options['garlic_bread_add_cheese'] = 'yes';
+                // Add cheese price
+                if (is_numeric($price)) {
+                    $price += 1.50; // Price for adding cheese to garlic bread
+                }
+            }
+        }
+        
+        // Handle third pizza for combo
+        if ($request->has('third_pizza') && $request->third_pizza === 'yes') {
+            $options['third_pizza'] = 'yes';
+            
+            // Add third pizza price based on combo type
+            if (is_numeric($price)) {
+                if (strpos($product->name, 'Medium') !== false) {
+                    $price += 10.99;
+                } elseif (strpos($product->name, 'Large') !== false) {
+                    $price += 12.99;
+                } elseif (strpos($product->name, 'X-Large') !== false) {
+                    $price += 13.99;
+                }
+            }
+        }
+        
+        // Handle second pizza for combos (jumbo size only usually)
+        if ($request->has('add_second_pizza') && $request->add_second_pizza === 'yes') {
+            $options['add_second_pizza'] = 'yes';
+            
+            // If there are specific options for the second pizza, store them too
+            if ($request->has('pizza2_size')) {
+                $options['pizza2_size'] = $request->pizza2_size;
+            }
+            
+            if ($request->has('pizza2_toppings') && is_array($request->pizza2_toppings)) {
+                $options['pizza2_toppings'] = $request->pizza2_toppings;
+            }
+            
+            // Add second pizza price - typically $15.99
+            if (is_numeric($price)) {
+                $price += 15.99;
+            }
+        }
+        
+        // Handle pop/soda additions for combos
+        if ($request->has('add_pop') && $request->add_pop === 'yes') {
+            $options['add_pop'] = 'yes';
+            
+            // Collect selected pops
+            foreach (['pop1', 'pop2', 'pop3', 'pop4'] as $popField) {
+                if ($request->has($popField) && !empty($request->$popField)) {
+                    $options[$popField] = $request->$popField;
+                }
+            }
+        } else {
+            // For combo templates that directly include pop selections without the add_pop flag
+            foreach (['pop1', 'pop2', 'pop3', 'pop4'] as $popField) {
+                if ($request->has($popField) && !empty($request->$popField)) {
+                    $options[$popField] = $request->$popField;
+                }
+            }
+        }
+        
+        // Store additional combo-specific options
+        foreach ($request->all() as $key => $value) {
+            // Check if this is a combo-specific option we haven't already processed
+            if (strpos($key, 'combo_') === 0 || 
+                strpos($key, 'pizza_') === 0 ||
+                strpos($key, 'garlic_bread') === 0 ||
+                strpos($key, 'wing_') === 0) {
+                
+                $options[$key] = $value;
             }
         }
         

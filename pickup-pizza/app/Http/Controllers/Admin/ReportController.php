@@ -63,7 +63,7 @@ class ReportController extends Controller
      */
     public function orders(Request $request)
     {
-        $query = Order::query()->with(['user', 'items.product', 'discount']);
+        $query = Order::query()->with(['items.product', 'discount']);
         
         // Apply filters
         if ($request->filled('start_date')) {
@@ -77,7 +77,7 @@ class ReportController extends Controller
         }
         
         if ($request->filled('status')) {
-            $query->where('status', $request->status);
+            $query->where('order_status', $request->status);
         }
         
         if ($request->filled('payment_method')) {
@@ -116,10 +116,25 @@ class ReportController extends Controller
         $sortDir = $request->input('sort_dir', 'desc');
         $query->orderBy($sortBy, $sortDir);
         
+        // Calculate summary statistics
+        $totalOrders = Order::count();
+        $totalRevenue = Order::sum('total');
+        $averageOrder = $totalOrders > 0 ? $totalRevenue / $totalOrders : 0;
+        $discountedOrders = Order::whereNotNull('discount_id')->count();
+        $discountPercentage = $totalOrders > 0 ? round(($discountedOrders / $totalOrders) * 100) : 0;
+        
+        $summary = [
+            'total_orders' => $totalOrders,
+            'total_revenue' => $totalRevenue,
+            'average_order' => $averageOrder,
+            'discounted_orders' => $discountedOrders,
+            'discount_percentage' => $discountPercentage
+        ];
+        
         $orders = $query->paginate(15)->withQueryString();
         
         // Get data for filter dropdowns
-        $statuses = Order::distinct()->pluck('status');
+        $statuses = Order::distinct()->pluck('order_status');
         $paymentMethods = Order::distinct()->pluck('payment_method');
         $products = Product::orderBy('name')->get();
         $combos = Combo::orderBy('name')->get();
@@ -129,7 +144,8 @@ class ReportController extends Controller
             'statuses',
             'paymentMethods',
             'products',
-            'combos'
+            'combos',
+            'summary'
         ));
     }
     
@@ -485,7 +501,7 @@ class ReportController extends Controller
     public function exportOrders(Request $request)
     {
         // Similar filter logic as the orders method
-        $query = Order::query()->with(['user', 'items.product', 'discount']);
+        $query = Order::query()->with(['items.product', 'discount']);
         
         // Apply filters (same as in orders method)
         // ...
@@ -522,7 +538,7 @@ class ReportController extends Controller
                     $order->id,
                     $order->created_at->format('Y-m-d H:i:s'),
                     $order->user ? $order->user->name : 'Guest',
-                    $order->status,
+                    $order->order_status,
                     $order->payment_method,
                     $order->items->count(),
                     '$' . number_format($order->subtotal, 2),
@@ -557,7 +573,7 @@ class ReportController extends Controller
                 ->sum('total'),
             'average_order' => 0,
             'completed_orders' => Order::whereBetween('created_at', [$startOfDay, $endOfDay])
-                ->where('status', 'completed')
+                ->where('order_status', 'completed')
                 ->count(),
         ];
         
@@ -588,7 +604,7 @@ class ReportController extends Controller
                 ->sum('total'),
             'average_order' => 0,
             'completed_orders' => Order::whereBetween('created_at', [$startOfRange, $endOfRange])
-                ->where('status', 'completed')
+                ->where('order_status', 'completed')
                 ->count(),
         ];
         
