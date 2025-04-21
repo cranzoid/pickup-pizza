@@ -49,13 +49,13 @@
                                 <p><strong>Date:</strong> {{ $order->pickup_time ? $order->pickup_time->format('F j, Y') : 'Not specified' }}</p>
                                 <p><strong>Time:</strong> {{ $order->pickup_time ? $order->pickup_time->format('g:i a') : 'Not specified' }}</p>
                                 @php
-                                    $settings = new \App\Models\Setting();
-                                    $store_address = $settings->get('business_address', '123 Pizza St, Toronto, ON M4M 1H1');
+                                $settings = new \App\Models\Setting();
+                                    $store_address = $settings->get('business_address', '55 Parkdale Ave North, Hamilton, ON L8H 5W7');
                                     // Extract city and postal code from address if available
                                     $addressParts = explode(',', $store_address);
-                                    $cityPostalParts = count($addressParts) > 1 ? explode(' ', trim($addressParts[1]), 2) : ['Toronto', 'ON M4M 1H1'];
-                                    $city = $cityPostalParts[0] ?? 'Toronto';
-                                    $postal = count($cityPostalParts) > 1 ? $cityPostalParts[1] : 'ON M4M 1H1';
+                                    $cityPostalParts = count($addressParts) > 1 ? explode(' ', trim($addressParts[1]), 2) : ['Hamilton', 'ON L8H 5W7'];
+                                    $city = $cityPostalParts[0] ?? 'Hamilton';
+                                    $postal = count($cityPostalParts) > 1 ? $cityPostalParts[1] : 'ON L8H 5W7';
                                 @endphp
                                 <p><strong>Store Address:</strong> {{ $store_address }}</p>
                                 <p><strong>City:</strong> {{ $city }}</p>
@@ -65,13 +65,13 @@
                                 <p><strong>Date:</strong> {{ $order->pickup_time ? $order->pickup_time->format('F j, Y') : 'Not specified' }}</p>
                                 <p><strong>Time:</strong> {{ $order->pickup_time ? $order->pickup_time->format('g:i a') : 'Not specified' }}</p>
                                 @php
-                                    $settings = new \App\Models\Setting();
-                                    $store_address = $settings->get('business_address', '123 Pizza St, Toronto, ON M4M 1H1');
+                                $settings = new \App\Models\Setting();
+                                    $store_address = $settings->get('business_address', '55 Parkdale Ave North, Hamilton, ON L8H 5W7');
                                     // Extract city and postal code from address if available
                                     $addressParts = explode(',', $store_address);
-                                    $cityPostalParts = count($addressParts) > 1 ? explode(' ', trim($addressParts[1]), 2) : ['Toronto', 'ON M4M 1H1'];
-                                    $city = $cityPostalParts[0] ?? 'Toronto';
-                                    $postal = count($cityPostalParts) > 1 ? $cityPostalParts[1] : 'ON M4M 1H1';
+                                    $cityPostalParts = count($addressParts) > 1 ? explode(' ', trim($addressParts[1]), 2) : ['Hamilton', 'ON L8H 5W7'];
+                                    $city = $cityPostalParts[0] ?? 'Hamilton';
+                                    $postal = count($cityPostalParts) > 1 ? $cityPostalParts[1] : 'ON L8H 5W7';
                                 @endphp
                                 <p><strong>Store Address:</strong> {{ $store_address }}</p>
                                 <p><strong>City:</strong> {{ $city }}</p>

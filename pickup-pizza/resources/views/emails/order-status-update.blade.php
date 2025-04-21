@@ -372,8 +372,8 @@
             <div style="background-color: #f8f9fa; padding: 15px; border-left: 4px solid #28a745; margin-top: 20px; margin-bottom: 20px;">
                 <h4 style="margin-top: 0; color: #28a745;">Pickup Instructions</h4>
                 <p>Please arrive at our store at your selected pickup time. Your order will be ready and waiting for you.</p>
-                <p>If you have any questions, please call us at (416) 555-1234.</p>
-                <p><strong>Store Address:</strong> 123 Pizza Street, Toronto, ON M4M 1H1</p>
+                <p>If you have any questions, please call us at (905) 547-5777.</p>
+                <p><strong>Store Address:</strong> 55 Parkdale Ave North, Hamilton, ON L8H 5W7</p>
             </div>
             @endif
             
@@ -382,7 +382,7 @@
         
         <div class="footer">
             <p>&copy; {{ date('Y') }} PISA Pizza. All rights reserved.</p>
-            <p>123 Pizza Street, Toronto, ON M4M 1H1 | (416) 555-1234 | info@pisapizza.ca</p>
+            <p>55 Parkdale Ave North, Hamilton, ON L8H 5W7 | (905) 547-5777 | support@pisapizza.ca</p>
         </div>
     </div>
 </body>

@@ -271,8 +271,8 @@
                             </div>
                             <p class="text-muted mb-0">Our customer support team is here to help you with your order.</p>
                             <div class="mt-3">
-                                <a href="tel:{{ $settings->get('support_phone', '416-555-1234') }}" class="btn btn-outline-secondary w-100">
-                                    <i class="bi bi-telephone me-2"></i> {{ $settings->get('support_phone', '416-555-1234') }}
+                                <a href="tel:{{ $settings->get('support_phone', '905-547-5777') }}" class="btn btn-outline-secondary w-100">
+                                    <i class="bi bi-telephone me-2"></i> {{ $settings->get('support_phone', '905-547-5777') }}
                                 </a>
                             </div>
                         </div>

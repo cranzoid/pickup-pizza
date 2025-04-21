@@ -185,8 +185,8 @@ class Setting extends Model
             // Business information
             'business_name' => 'PISA Pizza',
             'business_email' => 'info@pisapizza.com',
-            'business_phone' => '555-123-4567',
-            'business_address' => '123 Pizza St, Toronto, ON M4M 1H1',
+            'business_phone' => '(905) 547-5777',
+            'business_address' => '55 Parkdale Ave North, Hamilton, ON L8H 5W7',
             
             // Order settings
             'min_pickup_time' => 30,
